@@ -1,0 +1,39 @@
+---
+title: "Methods"
+author: "Colin Mahony"
+date: "27/11/2020"
+output: html_document
+---
+
+## About this app
+
+The goal of this app is to help users to build an understanding of the newest generation of global climate model simulations, the sixth Coupled Model Intercomparison Project (CMIP6), at the regional scale of British Columbia. These models will be featured in the upcoming 2021 IPCC sixth assessment report (AR6). CarbonBrief provides a good [explanation](https://www.carbonbrief.org/cmip6-the-next-generation-of-climate-models-explained) of CMIP6 and the global results.  
+
+### Contributors
+App created by:<br>
+Colin Mahony<br>
+Research Climatologist<br>
+BC Ministry of Forests, Lands, Natural Resource Operations and Rural Development<br>
+colin.mahony@gov.bc.ca
+
+CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences
+
+### Methods
+
+**Climate Variables**--The focus of this app is on comparison of observed and modeled temperature and precipitation. There are four climate elements available: Mean temperature (T<sub>ave</sub>), mean daily maximum temperature (T<sub>max</sub>), mean daily minimum temperature (T<sub>min</sub>), and Precipitation (PPT). Since historal station observations of temperature measure T<sub>min</sub> and T<sub>max</sub>, I used these as the primary temperature elements and calculated T<sub>ave</sub> as their average (see [here](https://www.nature.com/articles/srep04637) for an assessment of bias). 
+
+**Climate Models**--This app features climate model simulations from the ScenarioMIP project, which produces projections of future climate change based on scenarios called [Shared Socioeconomic Pathways](https://www.carbonbrief.org/explainer-how-shared-socioeconomic-pathways-explore-future-climate-change). I included all models with at least three simulations of the historical period (1850-2014) and at least one simulation for at least three of the SSP1-2.6, SSP2-4.5, SSP3-7.0, and SSP5-8.5 scenarios, as of May 2020. Some models have become available since May 2020 and will be added soon (EC-Earth3 and FGOALS). Others have added additional simulations that will also be added soon (ACCESS-ESM1-5, GISS-E2-1-G, IPSL-CM6A-LR, and UKESM1-0-LL). The CESM2 model was not included because it does not have output for T<sub>min</sub> and T<sub>max</sub> in its historical simulations. 
+
+**Ensemble range**--There are several simulation runs for each climate model. This app shows the range of these runs i.e., the minimum and maximum of the model runs in each year of the time series. The "Model Info" tab specifies the number of runs for each model. 
+
+**Observations**--Observed historical data are obtained from [ClimateBC](http://climatebc.ca/), using the generalized 0.5^o ERA5 topography. 
+
+**Bias correction**--Bias correction is an option, defaulted "off", since one of the purposes of this app is to assess regional bias in each model and across the ensemble. When bias correction is turned on, each single-model ensemble is shifted so that its 1951-1980 ensemble mean matches the 1951-1980 mean of the observed time series. Bias correction is done by addition for temperature and multiplication for precipitation.  
+
+**Compiled ensembles**--Users can compile selected models into a multi-model ensemble. In these plots, the shaded envelope shows the maxima and minima of all the single-model ensembles collectively, and the multimodel ensemble mean is the mean of the single-model ensemble means. 
+
+**Regional averages**--There is essentially no downscaling in this app. All climate model data were bilinearly interpolated to a common 0.5^o grid derived from the 025^o ERA5 grid (see figure below). Plot values are the average of the grid points within the boundaries of BC or the user-selected ecoprovince. 
+
+### Acknowledgements
+
+We acknowledge the World Climate Research Programme, which, through its Working Group on Coupled Modelling, coordinated and promoted CMIP6. We thank the climate modeling groups for producing and making available their model output, the Earth System Grid Federation (ESGF) for archiving the data and providing access, and the multiple funding agencies who support CMIP6 and ESGF. We also thank the European Centre for Medium-Range Weather Forecasts (ECMWF) for providing the ERA5 reanalysis via the Copernicus Climate Change Service. 

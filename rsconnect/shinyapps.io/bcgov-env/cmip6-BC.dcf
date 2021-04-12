@@ -1,0 +1,12 @@
+name: cmip6-BC
+title: cmip6-BC
+username:
+account: bcgov-env
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3466853
+bundleId: 4302705
+url: https://bcgov-env.shinyapps.io/cmip6-BC/
+when: 1614908448.91633
+asMultiple: FALSE
+asStatic: FALSE

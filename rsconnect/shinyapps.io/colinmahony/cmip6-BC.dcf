@@ -1,0 +1,12 @@
+name: cmip6-BC
+title: cmip6-BC
+username:
+account: colinmahony
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3326655
+bundleId: 3934358
+url: https://colinmahony.shinyapps.io/cmip6-BC/
+when: 1606934297.49909
+asMultiple: FALSE
+asStatic: FALSE

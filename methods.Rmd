@@ -1,0 +1,17 @@
+---
+title: "Methods"
+author: "Colin Mahony"
+date: "27/11/2020"
+output: html_document
+---
+
+## About this app
+
+The goal of this app is to help users to build an understanding of the newest generation of global climate model simulations, the sixth Coupled Model Intercomparison Project (CMIP6), at the regional scale of British Columbia. These models will be featured in the upcoming 2021 IPCC sixth assessment report (AR6). CarbonBrief provides a good [explanation](https://www.carbonbrief.org/cmip6-the-next-generation-of-climate-models-explained) of CMIP6 and the global results.  
+
+## Available Data
+
+
+
+## Including Plots
+
