@@ -1,0 +1,10 @@
+---
+title: "Resolution"
+author: "Colin Mahony"
+date: "14/04/2021"
+output: html_document
+---
+
+## Spatial resolution of GCMs
+
+There are many differences in the spatial grid resolution of the CMIP6 models featured in this app. The figure below shows how each model represents BC's topography. The "common grid" is the 0.5^o grid that all global climate models were interpolated to for the purposes of this app (see the Methods tab).
