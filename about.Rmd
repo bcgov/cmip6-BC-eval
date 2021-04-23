@@ -40,9 +40,11 @@ This tab allows users to compare model simulations to each other and to observat
  
 #### The Change tab
 
-This tab allows users to understand model variation in two variables. The main application of this tab is selection of small ensembles for regional analysis. 
+This tab allows users to understand the differences among models in a two-variable climate space. The main application of this tab is selection of small ensembles for regional analysis. 
 
 **Calculation of change**--Change in climate variables for each model is calculated relative to the model's simulated mean climate of the 1961-1990 reference period. This reference period mean is calculated from all available historical runs for each model. The change in each variable is the mean of all projected runs for the model within each scenario. Calculating change from multiple runs for each scenario reduces the uncertainty in the climate change signal due to natural variability. 
+
+**Predefined order for reducing ensemble size**--In "Predefined" ensemble selection mode, each subset of the ensemble is selected using the method of [Cannon 2015](https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml) to best represent the spread of the full 13-model ClimateBC/NA ensemble across all time periods and scenarios. The order of model selection is unique to each ecoprovince. 
 
 #### The Bias tab
 
@@ -59,7 +61,7 @@ As of December 2020, there were 44 global climate models contributing to the Sce
 3.	At least one run for each of the four main SSP marker scenarios;
 4.	One model per institution;
 5.	No closely related models, based on Fig. 5 in [Brunner et al. 2020](https://esd.copernicus.org/articles/11/995/2020/esd-11-995-2020.html); and 
-6.	No large biases over BC (only resulted in one exclusion – AWI-CM-1-1)
+6.	No large biases over BC
 
 This app includes models that met criteria 1-3 as of December 2020. 
 

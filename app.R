@@ -29,6 +29,7 @@ library(stinepack) # for interpolation splines
 # ----------------------------------------------
 
 modelMetadata <- read.csv("data/ModelList.csv")
+kkzRank <- read.csv("data/kkzRank.csv")
 
 # Define ecoprovinces (subregions of BC) and climate elements
 files <- list.files("data/", pattern="^summary.mean")
@@ -207,7 +208,7 @@ ui <- fluidPage(
              tabPanel("Change", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Compare amount of change among models, relative to the 1961-1990 period. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
+                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. You can use this tab to reduce the ensemble size base on predefined or custom model selection methods. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -217,11 +218,31 @@ ui <- fluidPage(
                             });
                             ')),
                           
-                          checkboxGroupInput("gcms.change", "Choose global climate models:",
-                                             choiceNames = gcm.names[select],
-                                             choiceValues = gcm.names[select],
-                                             selected = gcm.names[select],
-                                             inline = T
+                          tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
+                          
+                          
+                          radioButtons("modeChange", "Ensemble selection mode",
+                                       choiceNames = c("Predefined", "Custom"),
+                                       choiceValues = c("Predefined", "Custom"),
+                                       selected = "Predefined",
+                                       inline = T),
+                          
+                          conditionalPanel(
+                            condition = "input.modeChange == 'Predefined'",
+                            
+                            sliderInput("kkzN", label = "Reduce ensemble size in predefined order", min = 1, max = 13, value = 13, step=1),
+                          ),
+                          
+                          
+                          conditionalPanel(
+                            condition = "input.modeChange == 'Custom'",
+                            
+                            checkboxGroupInput("gcms.change", "Choose global climate models:",
+                                               choiceNames = gcm.names[select],
+                                               choiceValues = gcm.names[select],
+                                               selected = gcm.names[select],
+                                               inline = T
+                            ),
                           ),
                           
                           radioButtons("proj.year.change", inline = TRUE,
@@ -651,6 +672,9 @@ server <- function(input, output, session) {
     # element2 <- elements[4]
     # proj.year <- proj.years[3]
     # scenario <- scenarios[2]
+    # gcms.change <- gcm.names[select]
+    
+    # observe(updateCheckboxGroupInput(session, "gcms.change", selected = gcm.names[select][which(gcm.names[select]%in%kkzRank[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]))
     
     ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name.change)]
     yeartime1 <- yeartimes[which(yeartime.names==input$yeartime1.change)]
@@ -659,7 +683,11 @@ server <- function(input, output, session) {
     element2 <- elements[which(element.names==input$element2.change)]
     proj.year <- input$proj.year.change
     scenario <- input$scenario.change
-    gcms.change <- input$gcms.change
+    if(input$modeChange=="Predefined"){
+      gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
+    } else {
+      gcms.change <- input$gcms.change
+    }
     
     variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
     variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
@@ -674,8 +702,7 @@ server <- function(input, output, session) {
     xlim=range(x)*c(if(min(x)<0) 1.1 else 0.9, if(max(x)>0) 1.1 else 0.9)
     ylim=range(y)*c(if(min(y)<0) 1.1 else 0.9, if(max(y)>0) 1.1 else 0.9)
     
-    
-    
+    #initiate the plot
     fig <- plot_ly(x=x,y=y, type = 'scatter', mode = 'markers', marker = list(color ="lightgrey", size=5), hoverinfo="none", color="All models/scenarios/times")
 
     fig <- fig %>% layout(xaxis = list(title=paste("Change in", variable.names$Variable[which(variable.names$Code==variable1)]), 
