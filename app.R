@@ -23,6 +23,9 @@ library(shinydashboard)
 library(markdown)
 library(plotly)
 library(stinepack) # for interpolation splines
+library("shinyLP")
+library("shinyBS")
+library("shinythemes")
 
 # ----------------------------------------------
 # Load the input data
@@ -78,9 +81,100 @@ yeartime.names <- c(season.names, month.name)
 
 ensstats <- c("ensmin", "ensmax", "ensmean")
 
+tab_block <- function(text, cor, icon, id){
+  HTML(paste0('<a id="', id,'" href="#" class="action-button">
+                  <div class = "voronoys-block" style = "background-color:', cor, ';"> 
+                  <span class = "name">', texto, '</span>
+                  <div class="img_block">
+                    <div class="img_block_conteiner">
+                      <img src="img/',icon,'">
+                    </div>
+                  </div>
+              </div></a>'))
+}
+
 # Define UI ----
 ui <- fluidPage(
-  navbarPage(title = "CMIP6 viewer for British Columbia", theme = "bcgov.css", 
+  navbarPage(id="CMIP6-BC", title = "CMIP6 ensemble for ClimateBC", theme = "bcgov.css", 
+             
+             
+             ## -----------------------------------------------------
+             ## LANDING PAGE
+             
+             tabPanel(
+                      title = "Intro",
+                      value = "Intro",
+                      column(width = 12,
+                             wellPanel(
+                               HTML("<h1><b>The CMIP6 ensemble for ClimateBC</b></h1>"),
+                               HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
+                                    of ClimateBC. The ensemble is from the new generation of global climate model simulations, the sixth Coupled Model 
+                                    Intercomparison Project (CMIP6). </h4>")
+                             )
+                      ),
+                      column(width = 3, align = "left",
+                             wellPanel(
+                               actionButton("link_to_timeSeries", HTML("<h4><b>Time Series</b></h4>")),
+                               HTML("<h5> Compare historical and future model projections against observations,
+                                                  for individual models and customizable ensembles,
+                                                  with and without bias correction.</h5 >")
+                             )
+                      ),
+                      column(width = 3, align = "left",
+                             wellPanel(
+                               actionButton("link_to_Change", HTML("<h4><b>Change</b></h4>")),
+                               HTML("<h5>Compare model projections in a two-variable climate space. 
+                                    Create smaller ensembles based on predefined or custom criteria.</h5 >")
+                             )
+                      ),
+                      column(width = 3, align = "left",
+                             wellPanel(
+                               actionButton("link_to_Bias", HTML("<h4><b>Bias</b></h4>")),
+                               HTML("<h5>Assess model biases relative to historical observations.</h5 >")
+                             )
+                      ),
+                      # column(width = 3, align = "left",
+                      #        wellPanel(
+                      #          actionButton("link_to_Guidance", HTML("<h4><b>Guidance</b></h4>")),
+                      #          HTML("<h5>Guidance for using climate change projections, selecting ensembles, and selecting emissions scenarios. </h5 >")
+                      #        )
+                      # ),
+                      column(width = 12,
+                             br(), 
+                               HTML("<h4><b>Contributors</b></h4>"),
+                               HTML("<h5 >
+                               App created by:<br>
+                                 Colin Mahony<br>
+                                 Research Climatologist<br>
+                                 BC Ministry of Forests, Lands, Natural Resource Operations and Rural Development<br>
+                                 colin.mahony@gov.bc.ca<br>
+                               <br>
+                               CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.</h5 >")
+                               
+                      ),
+                      column(width = 12,
+                             style = "background-color:#003366; border-top:2px solid #fcba19;",
+                             
+                             tags$footer(class="footer",
+                                         tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+                                                  tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+                                                  )
+                                         )
+                             )
+                      )
+             ),
+             
+             
+
+             ## -----------------------------------------------------
+             ## Time Series
+             
              tabPanel("Time Series",
                       sidebarLayout(
                         sidebarPanel(
@@ -127,7 +221,7 @@ ui <- fluidPage(
                           ),
                           
                           # checkboxInput("compile", label = "Compile into ensemble projection", value = TRUE),
-
+                          
                           checkboxInput("biascorrect", label = "Bias correction (match 1961-90 model climate to observations)", value = TRUE),
                           
                           checkboxGroupInput("scenarios1", "Choose emissions scenarios",
@@ -205,6 +299,9 @@ ui <- fluidPage(
                       )
              ),
              
+             ## -----------------------------------------------------
+             ## CHANGE
+             
              tabPanel("Change", 
                       sidebarLayout(
                         sidebarPanel(
@@ -252,10 +349,10 @@ ui <- fluidPage(
                                        selected = proj.years[2]),
                           
                           radioButtons("scenario.change", "Choose emissions scenario",
-                                             choiceNames = scenario.names[-1],
-                                             choiceValues = scenarios[-1],
-                                             selected = scenarios[3],
-                                             inline = T),
+                                       choiceNames = scenario.names[-1],
+                                       choiceValues = scenarios[-1],
+                                       selected = scenarios[3],
+                                       inline = T),
                           
                           checkboxInput("trajectories", label = "Include model trajectories", value = T),
                           
@@ -269,16 +366,16 @@ ui <- fluidPage(
                                       choices = as.list(yeartime.names),
                                       selected = yeartime.names[3]),
                           
-                            selectInput("element2.change",
-                                        label = "y-axis: choose the climate element",
-                                        choices = as.list(element.names),
-                                        selected = element.names[4]),
-                            
-                            selectInput("yeartime2.change",
-                                        label = "y-axis: Choose the month/season",
-                                        choices = as.list(yeartime.names),
-                                        selected = yeartime.names[3]),
-
+                          selectInput("element2.change",
+                                      label = "y-axis: choose the climate element",
+                                      choices = as.list(element.names),
+                                      selected = element.names[4]),
+                          
+                          selectInput("yeartime2.change",
+                                      label = "y-axis: Choose the month/season",
+                                      choices = as.list(yeartime.names),
+                                      selected = yeartime.names[3]),
+                          
                           selectInput("ecoprov.name.change",
                                       label = "Choose an ecoprovince",
                                       choices = as.list(ecoprov.names),
@@ -311,6 +408,9 @@ ui <- fluidPage(
                       )
              ),
              
+             ## -----------------------------------------------------
+             ## BIAS TAB
+             
              tabPanel("Bias", 
                       sidebarLayout(
                         sidebarPanel(
@@ -338,17 +438,17 @@ ui <- fluidPage(
                                       choices = as.list(yeartime.names),
                                       selected = yeartime.names[3]),
                           
- 
-                            selectInput("element4",
-                                        label = "Choose a climate element for comparison",
-                                        choices = as.list(element.names),
-                                        selected = element.names[3]),
-                            
-                            selectInput("yeartime4",
-                                        label = "Choose a month/season for comparison",
-                                        choices = as.list(yeartime.names),
-                                        selected = yeartime.names[3]),
-
+                          
+                          selectInput("element4",
+                                      label = "Choose a climate element for comparison",
+                                      choices = as.list(element.names),
+                                      selected = element.names[3]),
+                          
+                          selectInput("yeartime4",
+                                      label = "Choose a month/season for comparison",
+                                      choices = as.list(yeartime.names),
+                                      selected = yeartime.names[3]),
+                          
                           checkboxInput("equalscale", label = "Equal-scale axes", value = TRUE),
                           
                           selectInput("ecoprov.name.II",
@@ -383,6 +483,34 @@ ui <- fluidPage(
                       )
              ),
              
+             # ## -----------------------------------------------------
+             # ## GUIDANCE
+             # 
+             # tabPanel("Guidance",
+             #          
+             #          includeMarkdown("Guidance.Rmd"),
+             #          
+             #          column(width = 12,
+             #                 style = "background-color:#003366; border-top:2px solid #fcba19;",
+             #                 
+             #                 tags$footer(class="footer",
+             #                             tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+             #                                      tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+             #                                      )
+             #                             )
+             #                 )
+             #          )
+             # ),
+             
+             ## -----------------------------------------------------
+             ## ABOUT
+             
              tabPanel("About",
                       
                       includeMarkdown("about.Rmd"),
@@ -404,6 +532,9 @@ ui <- fluidPage(
                              )
                       )
              ),
+             
+             ## -----------------------------------------------------
+             ## RESOLUTION
              
              tabPanel("Resolution",
                       
@@ -428,6 +559,9 @@ ui <- fluidPage(
                              )
                       )
              ),
+             
+             ## -----------------------------------------------------
+             ## MODEL INFO
              
              tabPanel("Model Info",
                       DT::dataTableOutput("table"),
@@ -454,8 +588,25 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output, session) {
   
+  observeEvent(input$link_to_timeSeries, {
+    updateNavbarPage(session, "CMIP6-BC", selected="Time Series")
+  })
+  
+  observeEvent(input$link_to_Change, {
+    updateNavbarPage(session, "CMIP6-BC", selected="Change")
+  })
+  
+  observeEvent(input$link_to_Bias, {
+    updateNavbarPage(session, "CMIP6-BC", selected="Bias")
+  })
+  
+  observeEvent(input$link_to_Guidance, {
+    updateNavbarPage(session, "CMIP6-BC", selected="Guidance")
+  })
+  
+  
   timeSeriesPlot <- function() {
-
+    
     # user specificationS
     ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name)]
     yeartime1 <- yeartimes[which(yeartime.names==input$yeartime1)]
@@ -704,18 +855,18 @@ server <- function(input, output, session) {
     
     #initiate the plot
     fig <- plot_ly(x=x,y=y, type = 'scatter', mode = 'markers', marker = list(color ="lightgrey", size=5), hoverinfo="none", color="All models/scenarios/times")
-
+    
     fig <- fig %>% layout(xaxis = list(title=paste("Change in", variable.names$Variable[which(variable.names$Code==variable1)]), 
                                        range=xlim), 
                           yaxis = list(title=paste("Change in", variable.names$Variable[which(variable.names$Code==variable2)]),
                                        range=ylim)
-                          )
+    )
     
     fig <- fig %>% add_markers(x=x0,y=y0, color="observed\n(2001-2020)", text="observed\n(2001-2020)", hoverinfo="text",
                                marker = list(size = 30,
                                              color = "lightgrey"))
     
-        gcm=gcms.change[2]
+    gcm=gcms.change[2]
     for(gcm in gcms.change){
       i=which(gcm.names==gcm)
       x1 <- data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm==gcm), which(names(data)==variable1)]
@@ -751,10 +902,10 @@ server <- function(input, output, session) {
     
     if(element1=="PPT") fig <- fig %>% layout(xaxis = list(tickformat = "%"))
     if(element2=="PPT") fig <- fig %>% layout(yaxis = list(tickformat = "%"))
-
-        fig
- 
-    }  
+    
+    fig
+    
+  }  
   )
   
   
@@ -808,7 +959,7 @@ server <- function(input, output, session) {
                           yaxis = list(title=paste(fun.names[yfun], variable.names$Variable[which(variable.names$Code==variable2)]),
                                        range=ylim)
     )
-
+    
     gcms.bias <- if(ClimateBC==T) unique(data.mean$gcm[!is.na(data.mean$run)])[select] else unique(data.mean$gcm[!is.na(data.mean$run)])
     mods <- substr(gcm.names, 1, 2)
     
