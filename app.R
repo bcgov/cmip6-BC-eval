@@ -26,7 +26,7 @@ library(stinepack) # for interpolation splines
 library("shinyLP")
 library("shinyBS")
 library("shinythemes")
-
+library("shinyWidgets")
 # ----------------------------------------------
 # Load the input data
 # ----------------------------------------------
@@ -102,56 +102,90 @@ ui <- fluidPage(
              ## LANDING PAGE
              
              tabPanel(
-                      title = "Intro",
-                      value = "Intro",
-                      column(width = 12,
-                             wellPanel(
-                               HTML("<h1><b>The CMIP6 ensemble for ClimateBC</b></h1>"),
-                               HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
+               title = "Intro",
+               value = "Intro",
+               column(width = 12,
+                      wellPanel(
+                        HTML("<h1><b>CMIP6-BC</b> - The new climate model ensemble for ClimateBC</h1>"),
+                        HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
                                     of ClimateBC. The ensemble is from the new generation of global climate model simulations, the sixth Coupled Model 
-                                    Intercomparison Project (CMIP6). </h4>")
-                             )
-                      ),
-                      column(width = 3, align = "left",
-                             wellPanel(
-                               actionButton("link_to_timeSeries", HTML("<h4><b>Time Series</b></h4>")),
-                               HTML("<h5> Compare historical and future model projections against observations,
+                                    Intercomparison Project (CMIP6). Use this tool to learn about the model simulations in ClimateBC, choose a small 
+                                    ensemble suited for your research, and export plots for your own use. </h4>")
+                      )
+               ),
+               column(width = 2, align = "left",
+                      wellPanel(
+                        actionButton("link_to_timeSeries", HTML("<h4><b>Time series plots</b></h4>")),
+                        HTML("<h5> Compare historical and future model projections against observations,
                                                   for individual models and customizable ensembles,
                                                   with and without bias correction.</h5 >")
-                             )
-                      ),
-                      column(width = 3, align = "left",
-                             wellPanel(
-                               actionButton("link_to_Change", HTML("<h4><b>Change</b></h4>")),
-                               HTML("<h5>Compare model projections in a two-variable climate space. 
+                      )
+               ),
+               column(width = 2, align = "left",
+                      wellPanel(
+                        actionButton("link_to_Change", HTML("<h4><b>Choose models</b></h4>")),
+                        HTML("<h5>Compare model projections in a two-variable climate space. 
                                     Create smaller ensembles based on predefined or custom criteria.</h5 >")
-                             )
-                      ),
-                      column(width = 3, align = "left",
-                             wellPanel(
-                               actionButton("link_to_Bias", HTML("<h4><b>Bias</b></h4>")),
-                               HTML("<h5>Assess model biases relative to historical observations.</h5 >")
-                             )
-                      ),
-                      # column(width = 3, align = "left",
-                      #        wellPanel(
-                      #          actionButton("link_to_Guidance", HTML("<h4><b>Guidance</b></h4>")),
-                      #          HTML("<h5>Guidance for using climate change projections, selecting ensembles, and selecting emissions scenarios. </h5 >")
-                      #        )
-                      # ),
-                      column(width = 12,
-                             br(), 
-                               HTML("<h4><b>Contributors</b></h4>"),
-                               HTML("<h5 >
+                      )
+               ),
+               column(width = 2, align = "left",
+                      wellPanel(
+                        actionButton("link_to_Bias", HTML("<h4><b>Assess Bias</b></h4>")),
+                        HTML("<h5>Assess model biases relative to historical observations.</h5 >")
+                      )
+               ),
+               column(width = 2, align = "left",
+                      wellPanel(
+                        actionButton("link_to_Maps", HTML("<h4><b>Maps</b></h4>")),
+                        HTML("<h5>Compare spatial variation in climate change among models. </h5 >")
+                      )
+               ),
+               column(width = 2, align = "left",
+                      wellPanel(
+                        actionButton("link_to_Guidance", HTML("<h4><b>Guidance</b></h4>")),
+                        HTML("<h5>Guidance for selecting models, emissions scenarios, and time periods. </h5 >")
+                      )
+               ),
+               column(width = 12,
+                      br(), 
+                      HTML("<h4><b>Contributors</b></h4>"),
+                      HTML("<h5 >
                                App created by:<br>
                                  Colin Mahony<br>
                                  Research Climatologist<br>
                                  BC Ministry of Forests, Lands, Natural Resource Operations and Rural Development<br>
                                  colin.mahony@gov.bc.ca<br>
                                <br>
-                               CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.</h5 >")
-                               
-                      ),
+                               CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.<br>
+                               <br>
+                               <b>Code: </b>The code and data for this tool are available at <a href='https://github.com/bcgov/cmip6-BC-eval'>https://github.com/bcgov/cmip6-BC-eval</a></h5>")
+                      
+               ),
+               column(width = 12,
+                      style = "background-color:#003366; border-top:2px solid #fcba19;",
+                      
+                      tags$footer(class="footer",
+                                  tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+                                           tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+                                                   tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                   tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                   tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                   tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                   tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                   tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+                                           )
+                                  )
+                      )
+               )
+             ),
+             
+             ## -----------------------------------------------------
+             ## ABOUT
+             
+             tabPanel("About",
+                      
+                      includeMarkdown("about.Rmd"),
+                      
                       column(width = 12,
                              style = "background-color:#003366; border-top:2px solid #fcba19;",
                              
@@ -170,15 +204,13 @@ ui <- fluidPage(
                       )
              ),
              
-             
-
              ## -----------------------------------------------------
              ## Time Series
              
              tabPanel("Time Series",
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 13-model ClimateBC/NA ensemble is the default selection."),
+                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 13-model ClimateBC/NA ensemble is the default selection. Shaded areas are the minimum and maximum of the multiple simulation runs for each climate model. "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -237,7 +269,6 @@ ui <- fluidPage(
                           
                           checkboxInput("era5", label = "Show ERA5 reanalysis", value = F),
                           
-                          # ELEMENT NAMES. THIS IS WHERE THE DERIVED VARIABLES WILL BE ADDED TO THE LIST
                           selectInput("element1",
                                       label = "Choose the climate element",
                                       choices = as.list(element.names),
@@ -253,7 +284,6 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.compare == true",
                             
-                            # ELEMENT NAMES. THIS IS WHERE THE DERIVED VARIABLES WILL BE ADDED TO THE LIST
                             selectInput("element2",
                                         label = "Choose a climate element for comparison",
                                         choices = as.list(element.names),
@@ -270,13 +300,12 @@ ui <- fluidPage(
                                       choices = as.list(ecoprov.names),
                                       selected = ecoprov.names[1]),
                           
-                          downloadButton(outputId = "downloadPlot", label = "Download plot"),
-                          
                           img(src = "Ecoprovinces_Title.png", height = round(1861*1/5), width = round(1993*1/5))
                         ),
                         
                         mainPanel(
                           
+                          downloadButton(outputId = "downloadPlot", label = "Download plot"),
                           plotOutput(outputId = "timeSeries")
                           
                         )
@@ -302,7 +331,7 @@ ui <- fluidPage(
              ## -----------------------------------------------------
              ## CHANGE
              
-             tabPanel("Change", 
+             tabPanel("Choose models", 
                       sidebarLayout(
                         sidebarPanel(
                           helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. You can use this tab to reduce the ensemble size base on predefined or custom model selection methods. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
@@ -364,7 +393,7 @@ ui <- fluidPage(
                           selectInput("yeartime1.change",
                                       label = "x-axis: Choose the month/season",
                                       choices = as.list(yeartime.names),
-                                      selected = yeartime.names[3]),
+                                      selected = yeartime.names[1]),
                           
                           selectInput("element2.change",
                                       label = "y-axis: choose the climate element",
@@ -374,7 +403,7 @@ ui <- fluidPage(
                           selectInput("yeartime2.change",
                                       label = "y-axis: Choose the month/season",
                                       choices = as.list(yeartime.names),
-                                      selected = yeartime.names[3]),
+                                      selected = yeartime.names[1]),
                           
                           selectInput("ecoprov.name.change",
                                       label = "Choose an ecoprovince",
@@ -386,7 +415,8 @@ ui <- fluidPage(
                         
                         mainPanel(
                           
-                          plotlyOutput(outputId = "ChangePlot", height="600px")
+                          plotlyOutput(outputId = "ChangePlot", height="600px"),
+                          downloadButton(outputId = "downloadData_change", label = "Download data")
                           
                         )
                       ),
@@ -411,7 +441,7 @@ ui <- fluidPage(
              ## -----------------------------------------------------
              ## BIAS TAB
              
-             tabPanel("Bias", 
+             tabPanel("Assess bias", 
                       sidebarLayout(
                         sidebarPanel(
                           helpText("Compare bias among models, relative to observations. Bias is the difference between the observed 1961-1990 climate and the simulated 1961-1990 climate for each model run. The labelled point for each model is the mean of the biases for all of the historical runs of that model. "),
@@ -482,38 +512,86 @@ ui <- fluidPage(
                              )
                       )
              ),
+ 
+             ## -----------------------------------------------------
+             ## Maps TAB
              
-             # ## -----------------------------------------------------
-             # ## GUIDANCE
-             # 
-             # tabPanel("Guidance",
-             #          
-             #          includeMarkdown("Guidance.Rmd"),
-             #          
-             #          column(width = 12,
-             #                 style = "background-color:#003366; border-top:2px solid #fcba19;",
-             #                 
-             #                 tags$footer(class="footer",
-             #                             tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
-             #                                      tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-             #                                              tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
-             #                                      )
-             #                             )
-             #                 )
-             #          )
-             # ),
+             tabPanel("Maps", 
+                      sidebarLayout(
+                        sidebarPanel(
+                          helpText("These maps show the spatial pattern of simulated climate change for each model. 
+                                   The change is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
+                                   relative to the 1961-1990 period of the model's historical simulations. "),
+                          
+                          tags$head(tags$script('$(document).on("shiny:connected", function(e) {
+                            Shiny.onInputChange("innerWidth", window.innerWidth);
+                            });
+                            $(window).resize(function(e) {
+                            Shiny.onInputChange("innerWidth", window.innerWidth);
+                            });
+                            ')),
+                          
+                          radioButtons("elementMap", inline = F,
+                                      label = "Choose the climate element",
+                                      choiceNames = as.list(element.names)[-1],
+                                      choiceValues = as.list(elements)[-1],
+                                      selected = elements[4]),
+                          
+                          radioButtons("seasonsOrMonths", "Months or Seasons",
+                                       choiceNames = c("Months", "Seasons"),
+                                       choiceValues = c("Months", "Seasons"),
+                                       selected = "Months",
+                                       inline = T),
+                          
+                          conditionalPanel(
+                            condition = "input.seasonsOrMonths == 'Seasons'",
+                            
+                            radioGroupButtons(
+                              inputId = "seasonbuttons",
+                              label = "Choose a season",
+                              choices = season.names
+                            )
+                            
+                          ),
+                          
+                          conditionalPanel(
+                            condition = "input.seasonsOrMonths == 'Months'",
+                            
+                            sliderTextInput("monthslider", label = "Choose a month", choices = month.abb)
+                          )
+                          
+                        ),    
+                        
+                        mainPanel(
+                          
+                          imageOutput("changeMap", width="100%", height="100%")
+                          
+                        )
+                      ),
+                      column(width = 12,
+                             style = "background-color:#003366; border-top:2px solid #fcba19;",
+                             
+                             tags$footer(class="footer",
+                                         tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+                                                  tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                                                          tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+                                                  )
+                                         )
+                             )
+                      )
+             ),
              
              ## -----------------------------------------------------
-             ## ABOUT
+             ## GUIDANCE
              
-             tabPanel("About",
+             tabPanel("Guidance",
                       
-                      includeMarkdown("about.Rmd"),
+                      includeMarkdown("guidance.Rmd"),
                       
                       column(width = 12,
                              style = "background-color:#003366; border-top:2px solid #fcba19;",
@@ -593,11 +671,15 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$link_to_Change, {
-    updateNavbarPage(session, "CMIP6-BC", selected="Change")
+    updateNavbarPage(session, "CMIP6-BC", selected="Choose models")
   })
   
   observeEvent(input$link_to_Bias, {
-    updateNavbarPage(session, "CMIP6-BC", selected="Bias")
+    updateNavbarPage(session, "CMIP6-BC", selected="Assess bias")
+  })
+  
+  observeEvent(input$link_to_Maps, {
+    updateNavbarPage(session, "CMIP6-BC", selected="Maps")
   })
   
   observeEvent(input$link_to_Guidance, {
@@ -778,8 +860,8 @@ server <- function(input, output, session) {
       b <- if(input$era5==T) 2 else NA
       c <- if(length(gcms.ts>0)) 3 else NA
       s <- !is.na(c(a,b,c))
-      legend.GCM <- if(input$mode=="Ensemble") paste("GCM simulations (min & max);", length(input$gcms.ts2), "models")  else paste("GCM simulations (min & max);", input$gcms.ts1)
-      legend("topleft", title = "Historical Period", legend=c("Station observations (ClimateBC)", "ERA5 reanalysis", legend.GCM)[s], bty="n",
+      legend.GCM <- if(input$mode=="Ensemble") paste("Simulations (", length(input$gcms.ts2), "GCMs)", sep="")  else paste("Simulations (", input$gcms.ts1, ")", sep="")
+      legend("topleft", title = "Historical Period", legend=c("Station observations", "ERA5 reanalysis", legend.GCM)[s], bty="n",
              lty=c(1,1,NA)[s], col=c(obs.color, era5.color, NA)[s], lwd=c(3,2,NA)[s], pch=c(NA,NA, 22)[s], pt.bg = c(NA, NA, colScheme[1])[s], pt.cex=c(NA,NA,2)[s])
       
       s <- rev(which(scenarios[-1]%in%input$scenarios1))
@@ -788,14 +870,14 @@ server <- function(input, output, session) {
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
-      mtext("  Created using https://bcgov-env.shinyapps.io/cmip6-BC\n  Copyright 2021 Province of BC\n  Contact: Colin Mahony colin.mahony@gov.bc.ca", side=1, line=-1.35, adj=0.0, font=2, cex=1, col="gray")
+      mtext("  Created using https://bcgov-env.shinyapps.io/cmip6-BC\n  Copyright 2021 Province of BC\n  Contact: Colin Mahony colin.mahony@gov.bc.ca", side=1, line=-1.35, adj=0.0, font=1, cex=1, col="gray")
       
       print(num)
     }
     box()
   }
   output$timeSeries <- renderPlot({ timeSeriesPlot() },
-                                  height=reactive(ifelse(!is.null(input$innerWidth),input$innerWidth*0.45,0))
+                                  height=reactive(ifelse(!is.null(input$innerWidth),input$innerWidth*0.425,0))
   )
   
   
@@ -908,6 +990,18 @@ server <- function(input, output, session) {
   }  
   )
   
+  # Downloadable csv of selected dataset ----
+  data_change <- reactive(read.csv(paste("data/change", ecoprovs[which(ecoprov.names==input$ecoprov.name.change)], "csv", sep=".")))
+  
+  output$downloadData_change <- downloadHandler(
+
+        filename = function() {
+      paste("CMIP6BC.change", ecoprovs[which(ecoprov.names==input$ecoprov.name.change)], "csv", sep=".")
+    },
+    content = function(file) {
+      write.csv(data_change(), file, row.names = FALSE)
+    }
+  )
   
   output$BiasPlot <- renderPlotly({
     
@@ -998,11 +1092,24 @@ server <- function(input, output, session) {
   }
   )
   
+  output$changeMap <- renderImage({
+
+    yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
+    
+        filename <- normalizePath(file.path('./www',
+                                        paste("ChangeMap", input$elementMap, yeartimeMap, "png",sep=".")))
+    
+    list(src = filename, width="100%", height="100%")
+    
+  }, deleteFile = FALSE)
+  
   output$table <- DT::renderDataTable({
     DT::datatable(modelMetadata, 
                   options = list(pageLength = dim(modelMetadata)[1]), 
                   rownames= FALSE, 
-                  caption = 'Model Metadata. Number of runs for each scenario are what we have downloaded, not necessarily what are currently available.'
+                  caption = HTML("<p>Information about models featured in this app.
+                                 ECS is equilibrium climate sensitivity (long-term temperature change in response to an instant doubling of CO2), and values are quoted from <a href='https://advances.sciencemag.org/content/6/26/eaba1981.abstract'>Meehl et al. (2020)</a>. 
+                                 The last five columns are the number of model runs for each scenario that are included in ClimateBC/NA and this app</p>")
     )
   })
   

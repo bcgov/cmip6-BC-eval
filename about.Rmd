@@ -63,7 +63,9 @@ As of December 2020, there were 44 global climate models contributing to the Sce
 5.	No closely related models, based on Fig. 5 in [Brunner et al. 2020](https://esd.copernicus.org/articles/11/995/2020/esd-11-995-2020.html); and 
 6.	No large biases over BC
 
-This app includes models that met criteria 1-3 as of December 2020. 
+To provide context, this app includes all 19 models that met criteria 1-3 as of December 2020. 
+
+**ECS of the ClimateBC/NA ensemble**--The 13-model ensemble has a mean global equilibrium climate sensitivity (ECS) of 3.7^(o)C and a range of 1.9-5.6^(o)C, which closely matches the full CMIP6 ensemble ECS (3.7^(o)C; 1.8-5.6^(o)C, [Meehl et al. 2020](https://advances.sciencemag.org/content/advances/6/26/eaba1981.full.pdf)). 
 
 ### Acknowledgements
 
