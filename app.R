@@ -32,7 +32,8 @@ library("shinyWidgets")
 # ----------------------------------------------
 
 modelMetadata <- read.csv("data/ModelList.csv")
-kkzRank <- read.csv("data/kkzRank.csv")
+kkzRank.includeUKESM <- read.csv("data/kkzRank.includeUKESM.csv")
+kkzRank.excludeUKESM <- read.csv("data/kkzRank.excludeUKESM.csv")
 
 # Define ecoprovinces (subregions of BC) and climate elements
 files <- list.files("data/", pattern="^summary.mean")
@@ -210,7 +211,7 @@ ui <- fluidPage(
              tabPanel("Time Series",
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 13-model ClimateBC/NA ensemble is the default selection. Shaded areas are the minimum and maximum of the multiple simulation runs for each climate model. "),
+                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 13-model ClimateBC/NA ensemble is the default selection. Shaded areas are the minimum and maximum of the multiple simulation runs for each climate model; a line indicates there is only one simulation for that scenario. "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -334,7 +335,7 @@ ui <- fluidPage(
              tabPanel("Choose models", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. You can use this tab to reduce the ensemble size base on predefined or custom model selection methods. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
+                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. You can use this tab to reduce the ensemble size base on predefined or custom model selection methods; see the 'Guidance' tab for more information on the Predefined ensembles. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -356,6 +357,8 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.modeChange == 'Predefined'",
                             
+                            checkboxInput("includeUKESM", label = "Include UKESM1 in small ensembles (<9 models)", value = F),
+                            
                             sliderInput("kkzN", label = "Reduce ensemble size in predefined order", min = 1, max = 13, value = 13, step=1),
                           ),
                           
@@ -375,7 +378,7 @@ ui <- fluidPage(
                                        label = "Choose a time slice",
                                        choiceNames = proj.year.names,
                                        choiceValues = proj.years,
-                                       selected = proj.years[2]),
+                                       selected = proj.years[3]),
                           
                           radioButtons("scenario.change", "Choose emissions scenario",
                                        choiceNames = scenario.names[-1],
@@ -521,7 +524,8 @@ ui <- fluidPage(
                         sidebarPanel(
                           helpText("These maps show the spatial pattern of simulated climate change for each model. 
                                    The change is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
-                                   relative to the 1961-1990 period of the model's historical simulations. "),
+                                   relative to the 1961-1990 period of the model's historical simulations. 
+                                   Maps for the Pacific Northwest are derived from raw GCM files; maps for North America are derived from ClimateNA output"),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -531,11 +535,16 @@ ui <- fluidPage(
                             });
                             ')),
                           
+                          radioButtons("areaMap", inline = F,
+                                       label = "Choose the zoom level",
+                                       choices = c("Pacific Northwest", "North America"),
+                                       selected = "Pacific Northwest"),
+                          
                           radioButtons("elementMap", inline = F,
-                                      label = "Choose the climate element",
-                                      choiceNames = as.list(element.names)[-1],
-                                      choiceValues = as.list(elements)[-1],
-                                      selected = elements[4]),
+                                       label = "Choose the climate element",
+                                       choiceNames = as.list(element.names)[-1],
+                                       choiceValues = as.list(elements)[-1],
+                                       selected = elements[4]),
                           
                           radioButtons("seasonsOrMonths", "Months or Seasons",
                                        choiceNames = c("Months", "Seasons"),
@@ -833,7 +842,7 @@ server <- function(input, output, session) {
         label <- paste(yeartime.names[which(yeartimes==yeartime)], get(paste("element", num, sep="")))
       }
       temp <- get(paste("ensmax.historical", num, sep="."))
-      text(1915,mean(temp$compile[60:80]), label, col="black", pos=3, font=2, cex=1)
+      text(1925,mean(temp$compile[60:80]), label, col="black", pos=3, font=2, cex=1)
       # }
       
       # add in observations
@@ -917,9 +926,13 @@ server <- function(input, output, session) {
     proj.year <- input$proj.year.change
     scenario <- input$scenario.change
     if(input$modeChange=="Predefined"){
-      gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
-    } else {
-      gcms.change <- input$gcms.change
+      if(input$includeUKESM==T){
+      gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank.includeUKESM[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
+      } else {
+        gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank.excludeUKESM[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
+      }
+      } else {
+        gcms.change <- input$gcms.change
     }
     
     variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
@@ -1096,8 +1109,9 @@ server <- function(input, output, session) {
 
     yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
     
-        filename <- normalizePath(file.path('./www',
-                                        paste("ChangeMap", input$elementMap, yeartimeMap, "png",sep=".")))
+    if(input$areaMap=="Pacific Northwest"){
+        filename <- normalizePath(file.path('./www', paste("ChangeMap", input$elementMap, yeartimeMap, "png",sep=".")))
+    } else {filename <- normalizePath(file.path('./www', paste("ChangeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
     
     list(src = filename, width="100%", height="100%")
     
