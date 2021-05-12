@@ -63,11 +63,11 @@ The goal of model selection for ClimateBC/NA was to select a set of approximatel
 **Criterion 3. Complete scenarios.** Models need to have at least one simulation of each of the four major SSP marker scenarios (SSP1-2.6, SSP2-4.5, SSP3-7.0, and SSP5-8.5). eight models failed this criterion. 
 
 **Criterion 4. One model per institution.** This criterion is a widely applied best practice in ensemble selection (REF). The rationale for each selection is provided below. 
-*	CNRM-ESM2-1 (ECS 4.8K) was chosen over CNRM-CM6-1 (ECS 4.9K) to give preference to the ESM over the AOGCM configuration; 
-*	EC-Earth3 (ECS 4.3K) was arbitrarily chosen over EC-Earth3-Veg (ECS 4.3K);
-*	INM-CM5-0 (ECS 1.9K) was arbitrarily chosen over INM-CM4-8 (ECS 1.8K); 
-*	MPI-ESM1-2-HR (ECS 3.0K) was chosen over MPI-ESM1-2-LR (ECS 3.0K) due to its high resolution and availability of >1 run for all but SSP5-8.5. 
-*	MIROC6 (ECS 2.6K) was chosen over MIROC-ES2L (ECS 2.7K) because it has more runs/scenario, higher resolution, and because the latter has very high temperature bias over British Columbia. 
+*	CNRM-ESM2-1 (ECS 4.8^(o)C) was chosen over CNRM-CM6-1 (ECS 4.9^(o)C) to give preference to the ESM over the AOGCM configuration; 
+*	EC-Earth3 (ECS 4.3^(o)C) was arbitrarily chosen over EC-Earth3-Veg (ECS 4.3^(o)C);
+*	INM-CM5-0 (ECS 1.9^(o)C) was arbitrarily chosen over INM-CM4-8 (ECS 1.8^(o)C); 
+*	MPI-ESM1-2-HR (ECS 3.0^(o)C) was chosen over MPI-ESM1-2-LR (ECS 3.0^(o)C) due to its high resolution and availability of >1 run for all but SSP5-8.5. 
+*	MIROC6 (ECS 2.6^(o)C) was chosen over MIROC-ES2L (ECS 2.7^(o)C) because it has more runs/scenario, higher resolution, and because the latter has very high temperature bias over British Columbia. 
 *	For the purposes of this ensemble, different physics or forcing schemes were considered different models. We used only the r*i1p3f1 variants of the GISS-E2-1-G model, as these had the most complete set of scenario simulations. 
 
 **Criterion 5. No closely related models.** Models that share components were excluded, following Figure 5 of Brunner et al. (2020). NESM3 was excluded due to its close relation to MPI-ESM1.  
@@ -77,6 +77,34 @@ The goal of model selection for ClimateBC/NA was to select a set of approximatel
 To provide context, this app includes all 19 models that met criteria 1-3 as of December 2020. 
 
 The 13-model ensemble has a mean global equilibrium climate sensitivity (ECS) of 3.7^(o)C and a range of 1.9-5.6^(o)C, which matches the full CMIP6 ensemble ECS (3.7^(o)C; 1.8-5.6^(o)C, [Meehl et al. 2020](https://advances.sciencemag.org/content/advances/6/26/eaba1981.full.pdf)). 
+
+#### Predefined (recommended) subsets of the ClimateBC/NA CMIP6 ensemble
+
+To provide users with guidance on selecting from among the 13 models provided in ClimateBC, the "Choose models" tab of this tool provides provides a predefined order of exclusion of models for user-specified ensemble sizes. Models are excluded in two phases: first based on screening criteria to exclude models with lower value for the anticipated uses of ClimateBC data and second using the method of [Cannon (2015)](https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml) to best represent the range of climate changes in the remaining models. 
+
+The following four screening criteria are more subjective than the six criteria used to select the 13-member ensemble. They generally are not sufficient in isolation but the balance of the criteria provides some justification for model exclusions. 
+
+**Criterion 7. Constraints on equilibrium climate sensitivity (ECS).** Multiple lines of evidence indicate that the Earth’s equilibrium climate sensitivity (ECS) is very likely between 2<sup>o</sup>C and 5<sup>o</sup>C ([Tokarska et al. 2020](https://advances.sciencemag.org/content/advances/6/12/eaaz9549.full.pdf); [Liang et al. 2020](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2019GL086757); [Sherwood et al. 2020](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019RG000678?fbclid=IwAR0RaslfRZtPcbi_RjZS3wnHWralh0GuoMyJ9NSbgAOOezP0VyTHgrfdlrs)). The evidence for the lower bound is robust, and weaker for the upper bound. From one perspective, inclusion of models with ECS outside this range uneccessarily increases the modeling uncertainty in downstream analyses. The opposing perspective is that high-sensitivity models are useful as a representation of high-impact, low-likelihood scenarios ([Sutton and Hawkins 2020](https://esd.copernicus.org/articles/11/751/2020/)). 
+
+**Criterion 8. Model resolution.** Four of the ClimateBC/NA models are high enough resolution to resolve macrotopography e.g., to clearly differentiate the coast mountains from the Columbia/Rocky Mountains. This resolved macrotopography does produce elevation-dependent climate change signals and rainshadow effects. These models are weighted towards inclusion despite other criteria such as a low number of simulations per scenario. Conversely, models with very low resolution are weighted towards exclusion. 
+
+**Criterion 9. Number of simulation runs.** ClimateBC/NA is primarily designed for analysis of projected climate normals; the climate change signal is of primary interest. Internal variability of the models are a confounding factor, producing erratic climate change trajectories in noisy climate variables like precipitation and winter temperature. The signal:noise ratio is increased by averaging the projected normals over multiple simulations of the same emissions scenario. Four models (BCC, INM, GFDL, and MRI) have only one run for most of the four scenarios, and this is a consideration for their exclusion. 
+
+**Criterion 10: Spatial pattern.** IPSL-CM6A-LR has a pronounced pattern of localized summer heating along the BC coast ranges, and little warming in some adjacent cells. This pattern is present for both Tmin and Tmax for all summer months. This may be a physically credible response within the model context, for example due to a snow albedo feedback. However, for the purposes of ClimateBC it would be problematic to downscale this warming pattern across all elevations within the cell. This problem is not isolated to IPSL-CM6A-LR, but the cell-to-cell contrast is especially pronounced in IPSL and could create artefacts for analyses based on ClimateBC. 
+
+The following models are excluded based on the combination of the four screening criteria: 
+
+1. CanESM5, because its very high climate sensitivity (ECS 5.6<sup>o</sup>C) and because its very low horizontal resolution creates to grid-box artefacts in downscaling.  
+
+2. INM-CM5-0, because it has very low climate sensitivity (ECS 1.9<sup>o</sup>C) and is an outlier among CMIP6 models for under-representing the observed 1975-2014 global temperature trend ([Liang et al. 2020](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2019GL086757)). In addition, this model has only one simulation for most scenarios, producing a less robust climate signal. 
+
+3. BCC-CSM2-MR, due to having a single simulation for each scenario and very low topographic resolution. 
+
+4. IPSL-CM6A-LR, due to isolated grid cells with very high summer warming in the BC Coast Ranges.  
+
+A fifth model, UKESM1-0-LL, also has very high climate sensitivity, similar to CanESM5, that is assessed as very unlikely based on observational evidence. Some researchers may wish to constrain their analysis ensemble to observations by excluding this model. Others may wish to include this model in their ensembles as a representation of the long tail of uncertainty in the upper limit of climate sensitivity ([Sutton 2018](https://www.researchgate.net/publication/328079274_ESD_Ideas_A_simple_proposal_to_improve_the_contribution_of_IPCC_WGI_to_the_assessment_and_communication_of_climate_change_risks)). To accomodate both perspectives, we provide the option to include or exclude UKESM1-0-LL in the ordered ensemble subsets. 
+
+After exclusion of models using the screening criteria above, subsets of the remaining eight models (plus optional UKESM1-0-LL) are provided using the method of [Cannon (2015)](https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml). For each user-selected ensemble size, this method selects the models that span as large a range of climate changes as possible. The implementation of this method in this app used the mean of the z-standardized seasonal changes in Tmin, Tmax, and precipitation in all 20-year time periods and emissions scenarios (except SSP5-8.5). The order of model selection is unique to each ecoprovince because the relative change projected by the models differs across the province.
 
 ### Acknowledgements
 
