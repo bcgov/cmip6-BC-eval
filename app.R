@@ -116,7 +116,7 @@ ui <- fluidPage(
                ),
                column(width = 2, align = "left",
                       wellPanel(
-                        actionButton("link_to_timeSeries", HTML("<h4><b>Time series plots</b></h4>")),
+                        actionButton("link_to_timeSeries", HTML("<h4><b>Time series</b></h4>")),
                         HTML("<h5> Compare historical and future model projections against observations,
                                                   for individual models and customizable ensembles,
                                                   with and without bias correction.</h5 >")
@@ -335,7 +335,11 @@ ui <- fluidPage(
              tabPanel("Choose models", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. You can use this tab to reduce the ensemble size base on predefined or custom model selection methods; see the 'Guidance' tab for more information on the Predefined ensembles. Click on a legend item to hide it; double-click to isolate it. Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
+                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. 
+                                   You can use this tab to reduce the ensemble size base on predefined or custom model selection methods; 
+                                   see the 'About' tab for more information on the predefined ensembles. 
+                                   Click on a legend item to hide it; double-click to isolate it. 
+                                   Drag a box on the plot to zoom in; double-click the plot to zoom back out."),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -525,7 +529,8 @@ ui <- fluidPage(
                           helpText("These maps show the spatial pattern of simulated climate change for each model. 
                                    The change is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
                                    relative to the 1961-1990 period of the model's historical simulations. 
-                                   Maps for the Pacific Northwest are derived from raw GCM files; maps for North America are derived from ClimateNA output"),
+                                   Maps for the Pacific Northwest are derived from raw GCM files; maps for North America are derived from ClimateNA output.
+                                   "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -539,7 +544,7 @@ ui <- fluidPage(
                                        label = "Choose the zoom level",
                                        choices = c("Pacific Northwest", "North America"),
                                        selected = "Pacific Northwest"),
-                          
+
                           radioButtons("elementMap", inline = F,
                                        label = "Choose the climate element",
                                        choiceNames = as.list(element.names)[-1],
@@ -558,7 +563,8 @@ ui <- fluidPage(
                             radioGroupButtons(
                               inputId = "seasonbuttons",
                               label = "Choose a season",
-                              choices = season.names
+                              choices = season.names, 
+                              selected = season.names[3]
                             )
                             
                           ),
@@ -566,7 +572,7 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.seasonsOrMonths == 'Months'",
                             
-                            sliderTextInput("monthslider", label = "Choose a month", choices = month.abb)
+                            sliderTextInput("monthslider", label = "Choose a month", choices = month.abb, selected = month.abb[7])
                           )
                           
                         ),    
