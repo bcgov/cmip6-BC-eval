@@ -1,4 +1,4 @@
-# cmip6-BC
+# cmip6-BC-eval
 An app to visualize and evaluate CMIP6 climate simulations for British Columbia
 
 Copyright 2021 Province of British Columbia
