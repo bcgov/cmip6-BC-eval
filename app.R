@@ -253,8 +253,6 @@ ui <- fluidPage(
                             
                           ),
                           
-                          # checkboxInput("compile", label = "Compile into ensemble projection", value = TRUE),
-                          
                           checkboxInput("biascorrect", label = "Bias correction (match 1961-90 model climate to observations)", value = TRUE),
                           
                           checkboxGroupInput("scenarios1", "Choose emissions scenarios",
@@ -361,7 +359,7 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.modeChange == 'Predefined'",
                             
-                            checkboxInput("includeUKESM", label = "Include UKESM1 in small ensembles (<9 models)", value = F),
+                            checkboxInput("includeUKESM", label = "Include UKESM1 in small ensembles (<9 models)", value = T),
                             
                             sliderInput("kkzN", label = "Reduce ensemble size in predefined order", min = 1, max = 13, value = 13, step=1),
                           ),
@@ -804,17 +802,15 @@ server <- function(input, output, session) {
             x <- temp[,1]
             temp <- temp[,which(names(temp)==gcm)]
             assign(ensstat, temp)
-            if(scenario == "historical"){
-              assign(paste(ensstat, scenario, sep="."), temp)
-            }
+            assign(paste("x", scenario, sep="."), x)
+            assign(paste(ensstat, scenario, sep="."), temp)
           }
           
           # colScheme <- c("gray60", "seagreen", "goldenrod4", "darkorange3", "darkred")
           colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
           # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
-          polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.5 else 0.5), border=colScheme[which(scenarios==scenario)])
-          if(input$showmean==T) lines(x, ensmean, col=colScheme[which(scenarios==scenario)], lwd=2)
-          
+          polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
+
           if(input$refline==T){
             ref.temp <- mean(ensmean.historical[111:140])
             lines(1961:1990, rep(ref.temp, 30), lwd=2)
@@ -837,7 +833,13 @@ server <- function(input, output, session) {
           
           print(scenario)
         }
-        print(gcm)
+        
+        # overlay the ensemble mean lines on top of all polygons
+        for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
+          if(input$showmean==T) lines(get(paste("x", scenario, sep=".")), get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2)
+        }
+        
+                print(gcm)
       }
       
       # Text to identify the time of year
@@ -881,7 +883,7 @@ server <- function(input, output, session) {
       
       s <- rev(which(scenarios[-1]%in%input$scenarios1))
       legend("top", title = "Future Scenarios", legend=scenario.names[-1][s], bty="n",
-             lty=c(NA,NA,NA,NA)[s], col=c(NA,NA,NA,NA)[s], lwd=c(NA,NA,NA,NA)[s], pch=c(22, 22, 22, 22)[s], pt.bg = colScheme[-1][s], pt.cex=c(2,2,2,2)[s])
+             lty=c(NA,NA,NA,NA)[s], col=colScheme[-1][s], lwd=c(NA,NA,NA,NA)[s], pch=c(22, 22, 22, 22)[s], pt.bg = alpha(colScheme[-1][s], 0.35), pt.cex=c(2,2,2,2)[s])
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
@@ -979,7 +981,7 @@ server <- function(input, output, session) {
         if(length(unique(sign(diff(x2))))==1){
           x3 <- if(unique(sign(diff(x2)))==-1) rev(x2) else x2
           y3 <- if(unique(sign(diff(x2)))==-1) rev(y2) else y2
-          s <- stinterp(x3,y3, seq(min(x3),max(x3), diff(xlim)/500)) # way better than interpSpline, not prone to oscillations
+          s <- stinterp(x3,y3, seq(min(x3),max(x3), diff(xlim)/1500)) # way better than interpSpline, not prone to oscillations
           fig <- fig %>% add_trace(x=s$x, y=s$y, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
         } else fig <- fig %>% add_trace(x=x2, y=y2, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
         
