@@ -230,7 +230,7 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.mode == 'Single GCM'",
                             
-                            radioButtons("gcms.ts1", "Choose a global climate models:",
+                            radioButtons("gcms.ts1", "Choose a global climate model:",
                                          choiceNames = gcm.names,
                                          choiceValues = gcms,
                                          selected = gcms[4],
@@ -330,7 +330,7 @@ ui <- fluidPage(
              tabPanel("Choose models", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period. 
+                          helpText("This tab shows the amount of change projected by each model, relative to the 1961-1990 period.
                                    You can use this tab to reduce the ensemble size base on predefined or custom model selection methods; 
                                    see the 'About' tab for more information on the predefined ensembles. 
                                    Click on a legend item to hide it; double-click to isolate it. 
@@ -549,7 +549,7 @@ ui <- fluidPage(
                           radioButtons("seasonsOrMonths", "Months or Seasons",
                                        choiceNames = c("Months", "Seasons"),
                                        choiceValues = c("Months", "Seasons"),
-                                       selected = "Months",
+                                       selected = "Seasons",
                                        inline = T),
                           
                           conditionalPanel(
@@ -961,6 +961,10 @@ server <- function(input, output, session) {
     y <- data[, which(names(data)==variable2)]
     x0 <- data[which(data$proj.year==2010 & data$gcm=="obs"), which(names(data)==variable1)]
     y0 <- data[which(data$proj.year==2010 & data$gcm=="obs"), which(names(data)==variable2)]
+    x.mean <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcms.change), which(names(data)==variable1)])
+    y.mean <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcms.change), which(names(data)==variable2)])
+    x.mean.ClimateBC <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcm.names[select]), which(names(data)==variable1)])
+    y.mean.ClimateBC <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcm.names[select]), which(names(data)==variable2)])
     
     xlim=range(x)*c(if(min(x)<0) 1.1 else 0.9, if(max(x)>0) 1.1 else 0.9)
     ylim=range(y)*c(if(min(y)<0) 1.1 else 0.9, if(max(y)>0) 1.1 else 0.9)
@@ -974,11 +978,19 @@ server <- function(input, output, session) {
                                        range=ylim)
     )
     
-    fig <- fig %>% add_markers(x=x0,y=y0, color="observed\n(2001-2020)", text="observed\n(2001-2020)", hoverinfo="text",
-                               marker = list(size = 30,
-                                             color = "lightgrey"))
+    fig <- fig %>% add_markers(x=x0,y=y0, color="observed (2001-2020)", text="observed\n(2001-2020)", hoverinfo="text",
+                               marker = list(size = 25,
+                                             color = "grey"))
     
-    gcm=gcms.change[2]
+    fig <- fig %>% add_markers(x=x.mean,y=y.mean, color="Custom ensemble mean", text="Custom ensemble mean", hoverinfo="text",
+                               marker = list(size = 20,
+                                             color = "grey", symbol = 3))
+    
+    fig <- fig %>% add_markers(x=x.mean.ClimateBC,y=y.mean.ClimateBC, color="ClimateBC 13-model mean", text="ClimateBC 13-model mean", hoverinfo="text",
+                               marker = list(size = 20,
+                                             color = "black", symbol = 103))
+    
+    gcm=gcms.change[3]
     for(gcm in gcms.change){
       i=which(gcm.names==gcm)
       x1 <- data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm==gcm), which(names(data)==variable1)]
@@ -991,9 +1003,14 @@ server <- function(input, output, session) {
           x3 <- if(unique(sign(diff(x2)))==-1) rev(x2) else x2
           y3 <- if(unique(sign(diff(x2)))==-1) rev(y2) else y2
           s <- stinterp(x3,y3, seq(min(x3),max(x3), diff(xlim)/1500)) # way better than interpSpline, not prone to oscillations
-          fig <- fig %>% add_trace(x=s$x, y=s$y, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
-        } else fig <- fig %>% add_trace(x=x2, y=y2, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
-        
+          fig <- fig %>% add_trace(x=s$x, y=s$y, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i], width = 2, dash = 'dash'), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+          limit <- if(unique(sign(diff(x2)))==-1) which(s$x>x1) else which(s$x<x1)
+          fig <- fig %>% add_trace(x=s$x[limit], y=s$y[limit], type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+        } else {
+          fig <- fig %>% add_trace(x=x2, y=y2, type = 'scatter', mode = 'lines', line = list(color=ColScheme[i], width = 2, dash = 'dash'), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+          limit <- c(1, (which(proj.years <= proj.year)+1))
+          fig <- fig %>% add_trace(x=x2[limit], y=y2[limit], type = 'scatter', mode = 'lines', line = list(color=ColScheme[i]), marker=NULL, legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+        }
         fig <- fig %>% add_markers(x=x2,y=y2, color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
                                    marker = list(size = 8,
                                                  color = ColScheme[i]),
