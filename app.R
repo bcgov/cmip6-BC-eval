@@ -230,7 +230,7 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.mode == 'Single GCM'",
                             
-                            radioButtons("gcms.ts1", "Choose global climate models:",
+                            radioButtons("gcms.ts1", "Choose a global climate models:",
                                          choiceNames = gcm.names,
                                          choiceValues = gcms,
                                          selected = gcms[4],
@@ -242,12 +242,9 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.mode == 'Ensemble'",
                             
-                            checkboxGroupInput("gcms.ts2", "Choose global climate models:",
-                                               choiceNames = gcm.names,
-                                               choiceValues = gcms,
-                                               selected = gcms[select],
-                                               inline = T
-                            ),
+                            uiOutput('reset_gcms'), # this is the radiobutton list of gcms but it is moved to the server side to allow the reset button 
+                            
+                            actionButton("reset_input", "Reset to ClimateBC ensemble"),
                             
                             checkboxInput("compile", label = "Compile into ensemble projection", value = TRUE),
                             
@@ -699,7 +696,19 @@ server <- function(input, output, session) {
     updateNavbarPage(session, "CMIP6-BC", selected="Guidance")
   })
   
-  
+  # This is the gcm selection for the time series plot. done as a renderUI to allow the reset button
+  output$reset_gcms <- renderUI({
+    times <- input$reset_input
+    div(id=letters[(times %% length(letters)) + 1],
+        checkboxGroupInput("gcms.ts2", "Choose global climate models:",
+                           choiceNames = gcm.names,
+                           choiceValues = gcms,
+                           selected = gcms[select],
+                           inline = T
+        )
+    )
+  })
+
   timeSeriesPlot <- function() {
     
     # user specificationS
