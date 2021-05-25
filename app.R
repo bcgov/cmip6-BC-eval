@@ -107,7 +107,7 @@ ui <- fluidPage(
                value = "Intro",
                column(width = 12,
                       wellPanel(
-                        HTML("<h1><b>CMIP6-BC</b> - The new climate model ensemble for ClimateBC</h1>"),
+                        HTML("<h2><b>CMIP6-BC</b> - The new climate model ensemble for ClimateBC</h2>"),
                         HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
                                     of ClimateBC. The ensemble is from the new generation of global climate model simulations, the sixth Coupled Model 
                                     Intercomparison Project (CMIP6). Use this tool to learn about the model simulations in ClimateBC, choose a small 
@@ -159,7 +159,7 @@ ui <- fluidPage(
                                <br>
                                CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.<br>
                                <br>
-                               <b>Code: </b>The code and data for this tool are available at <a href='https://github.com/bcgov/cmip6-BC-eval'>https://github.com/bcgov/cmip6-BC-eval</a></h5>")
+                               <b>Code: </b>The code and data for this tool are available at <a href='https://github.com/bcgov/cmip6-BC-eval' target='_blank'>https://github.com/bcgov/cmip6-BC-eval</a></h5>")
                       
                ),
                column(width = 12,
@@ -481,7 +481,7 @@ ui <- fluidPage(
                                       choices = as.list(yeartime.names),
                                       selected = yeartime.names[3]),
                           
-                          checkboxInput("equalscale", label = "Equal-scale axes", value = TRUE),
+                          checkboxInput("equalscale", label = "Equal-scale axes", value = F),
                           
                           selectInput("ecoprov.name.II",
                                       label = "Choose an ecoprovince",
@@ -514,7 +514,7 @@ ui <- fluidPage(
                              )
                       )
              ),
- 
+             
              ## -----------------------------------------------------
              ## Maps TAB
              
@@ -525,6 +525,7 @@ ui <- fluidPage(
                                    The change is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
                                    relative to the 1961-1990 period of the model's historical simulations. 
                                    Maps for the Pacific Northwest are derived from raw GCM files; maps for North America are derived from ClimateNA output.
+                                   Temperature units (K) are Kelvins, which are equivalent to degrees Celsius. 
                                    "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
@@ -539,37 +540,45 @@ ui <- fluidPage(
                                        label = "Choose the zoom level",
                                        choices = c("Pacific Northwest", "North America"),
                                        selected = "Pacific Northwest"),
-
-                          radioButtons("elementMap", inline = F,
-                                       label = "Choose the climate element",
-                                       choiceNames = as.list(element.names)[-1],
-                                       choiceValues = as.list(elements)[-1],
-                                       selected = elements[4]),
                           
-                          radioButtons("seasonsOrMonths", "Months or Seasons",
-                                       choiceNames = c("Months", "Seasons"),
-                                       choiceValues = c("Months", "Seasons"),
-                                       selected = "Seasons",
-                                       inline = T),
+                          radioButtons("mapType", inline = F,
+                                       label = "Choose the map type",
+                                       choices = c("Climate change", "Topography"),
+                                       selected = "Climate change"),
+                          
                           
                           conditionalPanel(
-                            condition = "input.seasonsOrMonths == 'Seasons'",
+                            condition = "input.mapType == 'Climate change'",
                             
-                            radioGroupButtons(
-                              inputId = "seasonbuttons",
-                              label = "Choose a season",
-                              choices = season.names, 
-                              selected = season.names[3]
+                            radioButtons("elementMap", inline = F,
+                                         label = "Choose the climate element",
+                                         choiceNames = as.list(element.names)[-1],
+                                         choiceValues = as.list(elements)[-1],
+                                         selected = elements[4]),
+                            
+                            radioButtons("seasonsOrMonths", "Months or Seasons",
+                                         choiceNames = c("Months", "Seasons"),
+                                         choiceValues = c("Months", "Seasons"),
+                                         selected = "Seasons",
+                                         inline = T),
+                            
+                            conditionalPanel(
+                              condition = "input.seasonsOrMonths == 'Seasons'",
+                              
+                              radioGroupButtons(
+                                inputId = "seasonbuttons",
+                                label = "Choose a season",
+                                choices = season.names, 
+                                selected = season.names[3]
+                              )
+                            ),
+                            
+                            conditionalPanel(
+                              condition = "input.seasonsOrMonths == 'Months'",
+                              
+                              sliderTextInput("monthslider", label = "Choose a month", choices = month.abb, selected = month.abb[7])
                             )
-                            
-                          ),
-                          
-                          conditionalPanel(
-                            condition = "input.seasonsOrMonths == 'Months'",
-                            
-                            sliderTextInput("monthslider", label = "Choose a month", choices = month.abb, selected = month.abb[7])
                           )
-                          
                         ),    
                         
                         mainPanel(
@@ -621,33 +630,33 @@ ui <- fluidPage(
                       )
              ),
              
-             ## -----------------------------------------------------
-             ## RESOLUTION
-             
-             tabPanel("Resolution",
-                      
-                      includeMarkdown("resolution.Rmd"),
-                      
-                      img(src = "ModelRes.png", height = 4500/11, width = 12600/11),
-                      
-                      column(width = 12,
-                             style = "background-color:#003366; border-top:2px solid #fcba19;",
-                             
-                             tags$footer(class="footer",
-                                         tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
-                                                  tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
-                                                  )
-                                         )
-                             )
-                      )
-             ),
-             
+             # ## -----------------------------------------------------
+             # ## RESOLUTION
+             # 
+             # tabPanel("Resolution",
+             #          
+             #          includeMarkdown("resolution.Rmd"),
+             #          
+             #          img(src = "ModelRes.png", height = 4500/11, width = 12600/11),
+             #          
+             #          column(width = 12,
+             #                 style = "background-color:#003366; border-top:2px solid #fcba19;",
+             #                 
+             #                 tags$footer(class="footer",
+             #                             tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+             #                                      tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+             #                                      )
+             #                             )
+             #                 )
+             #          )
+             # ),
+             # 
              ## -----------------------------------------------------
              ## MODEL INFO
              
@@ -708,7 +717,7 @@ server <- function(input, output, session) {
         )
     )
   })
-
+  
   timeSeriesPlot <- function() {
     
     # user specificationS
@@ -819,7 +828,7 @@ server <- function(input, output, session) {
           colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
           # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
           polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
-
+          
           if(input$refline==T){
             ref.temp <- mean(ensmean.historical[111:140])
             lines(1961:1990, rep(ref.temp, 30), lwd=2)
@@ -848,7 +857,7 @@ server <- function(input, output, session) {
           if(input$showmean==T) lines(get(paste("x", scenario, sep=".")), get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2)
         }
         
-                print(gcm)
+        print(gcm)
       }
       
       # Text to identify the time of year
@@ -944,12 +953,12 @@ server <- function(input, output, session) {
     scenario <- input$scenario.change
     if(input$modeChange=="Predefined"){
       if(input$includeUKESM==T){
-      gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank.includeUKESM[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
+        gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank.includeUKESM[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
       } else {
         gcms.change <- gcm.names[select][which(gcm.names[select]%in%kkzRank.excludeUKESM[1:input$kkzN,which(ecoprov.names==input$ecoprov.name.change)])]
       }
-      } else {
-        gcms.change <- input$gcms.change
+    } else {
+      gcms.change <- input$gcms.change
     }
     
     variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
@@ -1017,7 +1026,7 @@ server <- function(input, output, session) {
                                    legendgroup=paste("group", i, sep=""), showlegend = FALSE)
       }
       
-      fig <- fig %>% add_markers(x=x1,y=y1, color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
+      fig <- fig %>% add_markers(x=x1,y=y1, color=gcm.names[i],
                                  marker = list(size = 20,
                                                color = ColScheme[i],
                                                line = list(color = "black",
@@ -1041,8 +1050,8 @@ server <- function(input, output, session) {
   data_change <- reactive(read.csv(paste("data/change", ecoprovs[which(ecoprov.names==input$ecoprov.name.change)], "csv", sep=".")))
   
   output$downloadData_change <- downloadHandler(
-
-        filename = function() {
+    
+    filename = function() {
       paste("CMIP6BC.change", ecoprovs[which(ecoprov.names==input$ecoprov.name.change)], "csv", sep=".")
     },
     content = function(file) {
@@ -1140,12 +1149,21 @@ server <- function(input, output, session) {
   )
   
   output$changeMap <- renderImage({
-
-    yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
     
-    if(input$areaMap=="Pacific Northwest"){
+    if(input$mapType=="Topography"){
+      if(input$areaMap=="Pacific Northwest"){
+        filename <- normalizePath(file.path('./www', paste("Orography.PNW.png",sep=".")))
+      } else {filename <- normalizePath(file.path('./www', paste("Orography.NorthAmerica.png",sep=".")))}
+    }
+    
+    
+    if(input$mapType=="Climate change"){
+      yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
+      
+      if(input$areaMap=="Pacific Northwest"){
         filename <- normalizePath(file.path('./www', paste("ChangeMap", input$elementMap, yeartimeMap, "png",sep=".")))
-    } else {filename <- normalizePath(file.path('./www', paste("ChangeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
+      } else {filename <- normalizePath(file.path('./www', paste("ChangeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
+    }
     
     list(src = filename, width="100%", height="100%")
     
@@ -1155,9 +1173,9 @@ server <- function(input, output, session) {
     DT::datatable(modelMetadata, 
                   options = list(pageLength = dim(modelMetadata)[1]), 
                   rownames= FALSE, 
-                  caption = HTML("<p>Information about models featured in this app.
-                                 ECS is equilibrium climate sensitivity (long-term temperature change in response to an instant doubling of CO2), and values are quoted from <a href='https://advances.sciencemag.org/content/6/26/eaba1981.abstract'>Meehl et al. (2020)</a>. 
-                                 The last five columns are the number of model runs for each scenario that are included in ClimateBC/NA and this app</p>")
+                  caption = HTML("<p><h4><b>Information about models featured in this app.</b> 
+                                 ECS is equilibrium climate sensitivity (long-term temperature change in response to an instant doubling of CO2), and values are quoted from <a href='https://advances.sciencemag.org/content/6/26/eaba1981.abstract' target='_blank'>Meehl et al. (2020)</a>. 
+                                 The last five columns are the number of model runs for each scenario that are included in ClimateBC/NA and this app</p></h4>")
     )
   })
   
