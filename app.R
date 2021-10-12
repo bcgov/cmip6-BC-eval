@@ -52,6 +52,7 @@ files <- list.files("data/", pattern="^ensmin.BC")
 template <- read.csv(paste("data/", files[1], sep=""), stringsAsFactors = F)
 gcms <- names(template)[-c(1:2, length(names(template)))]
 select <- c(1,3,4,6,7,8,9,11,12,14,15,17,19)
+select8 <- c(1,6,7,8,9,14,15,17)
 gcms.select = gcms[select]
 scenarios <- unique(template[,1])
 scenario.names <- c("Historical simulations", "SSP1-2.6", "SSP2-4.5", "SSP3-7.0", "SSP5-8.5")
@@ -110,8 +111,8 @@ ui <- fluidPage(
                         HTML("<h2><b>CMIP6-BC</b> - The new climate model ensemble for ClimateBC</h2>"),
                         HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
                                     of ClimateBC. The ensemble is from the new generation of global climate model simulations, the sixth Coupled Model 
-                                    Intercomparison Project (CMIP6). Use this tool to learn about the model simulations in ClimateBC, choose a small 
-                                    ensemble suited for your research, and export plots for your own use. </h4>")
+                                    Intercomparison Project (CMIP6). Use this tool to learn about the model simulations in ClimateBC and choose a small 
+                                    ensemble suited for your research. </h4>")
                       )
                ),
                column(width = 2, align = "left",
@@ -148,18 +149,20 @@ ui <- fluidPage(
                       )
                ),
                column(width = 12,
-                      br(), 
-                      HTML("<h4><b>Contributors</b></h4>"),
-                      HTML("<h5 >
-                               App created by:<br>
+                      HTML("<h4><b>Citation</b></h4>
+                            <h5> <u>Please cite the contents of this app as:</u> <br>
+                            Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2021. <a href='https://eartharxiv.org/repository/view/2510/' target='_blank'>A CMIP6 ensemble for downscaled monthly climate normals over North America</a>. EarthArXiv. <a href='https://doi.org/10.31223/X5CK6Z' target='_blank'>https://doi.org/10.31223/X5CK6Z</a> </h5>
+                            <h4><b>Contributors</b></h4>
+                            <h5> <u>App created by:</u><br>
                                  Colin Mahony<br>
                                  Research Climatologist<br>
                                  BC Ministry of Forests, Lands, Natural Resource Operations and Rural Development<br>
                                  colin.mahony@gov.bc.ca<br>
                                <br>
-                               CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.<br>
-                               <br>
-                               <b>Code: </b>The code and data for this tool are available at <a href='https://github.com/bcgov/cmip6-BC-eval' target='_blank'>https://github.com/bcgov/cmip6-BC-eval</a></h5>")
+                               CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences.<br></h5>
+                            <h4><b>Code</b></h4>
+                            <h5> The code and data for this tool are available at <a href='https://github.com/bcgov/cmip6-BC-eval' target='_blank'>https://github.com/bcgov/cmip6-BC-eval</a></h5>
+                               <br>")
                       
                ),
                column(width = 12,
@@ -259,36 +262,66 @@ ui <- fluidPage(
                                              inline = T
                           ),
                           
-                          checkboxInput("showmean", label = "Show mean of projections", value = FALSE),
+                          checkboxInput("showmean", label = "Show mean of projections", value = T),
                           
                           checkboxInput("refline", label = "Show 1961-1990 baseline for models", value = T),
                           
-                          checkboxInput("era5", label = "Show ERA5 reanalysis", value = F),
+                          fluidRow(
+                            box(width = 12, 
+                                splitLayout(
+                                  checkboxInput("yearlines", label = "Show 5-year gridlines", value = F),
+                                  
+                                  checkboxInput("yfit", label = "fit y axis to visible data", value = F)
+                                )
+                            )
+                          ),
                           
-                          selectInput("element1",
-                                      label = "Choose the climate element",
-                                      choices = as.list(element.names),
-                                      selected = element.names[1]),
                           
-                          selectInput("yeartime1",
-                                      label = "Choose the month/season",
-                                      choices = as.list(yeartime.names),
-                                      selected = yeartime.names[3]),
+                          checkboxGroupInput("observations", "Choose observational datasets",
+                                             choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis"),
+                                             choiceValues = c("pcic", "climatebc", "era5"),
+                                             selected = "pcic",
+                                             inline = T
+                          ),
+                          
+                          # fluidRow(
+                          #   box(width = 12, 
+                          #       splitLayout(
+                          #         selectInput("element1",
+                          #                     label = "Choose the climate element",
+                          #                     choices = as.list(element.names),
+                          #                     selected = element.names[1]),
+                          #         
+                          #         selectInput("yeartime1",
+                          #                     label = "Choose the month/season",
+                          #                     choices = as.list(yeartime.names),
+                          #                     selected = yeartime.names[3])
+                          #       )
+                          #   )
+                          # ),
+                          
+                          div(style="display:inline-block; width: 290px",selectInput("element1",
+                                                                       label = "Choose the climate element",
+                                                                       choices = as.list(element.names),
+                                                                       selected = element.names[1])),
+                          div(style="display:inline-block; width: 200px",selectInput("yeartime1",
+                                                                       label = "Choose the month/season",
+                                                                       choices = as.list(yeartime.names),
+                                                                       selected = yeartime.names[3])),
                           
                           checkboxInput("compare", label = "Compare two variables", value = T),
                           
                           conditionalPanel(
                             condition = "input.compare == true",
                             
-                            selectInput("element2",
-                                        label = "Choose a climate element for comparison",
-                                        choices = as.list(element.names),
-                                        selected = element.names[1]),
-                            
-                            selectInput("yeartime2",
-                                        label = "Choose a month/season for comparison",
-                                        choices = as.list(yeartime.names),
-                                        selected = yeartime.names[1]),
+                            div(style="display:inline-block; width: 290px",selectInput("element2",
+                                                                                       label = "Choose the climate element",
+                                                                                       choices = as.list(element.names),
+                                                                                       selected = element.names[1])),
+                            div(style="display:inline-block; width: 200px", selectInput("yeartime2",
+                                                                                        label = "Choose the month/season",
+                                                                                        choices = as.list(yeartime.names),
+                                                                                        selected = yeartime.names[1])),
                           ),
                           
                           selectInput("ecoprov.name",
@@ -446,7 +479,7 @@ ui <- fluidPage(
              tabPanel("Assess bias", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Compare bias among models, relative to observations. Bias is the difference between the observed 1961-1990 climate and the simulated 1961-1990 climate for each model run. The labelled point for each model is the mean of the biases for all of the historical runs of that model. "),
+                          helpText("Compare bias among models, relative to observations. Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run. The labelled point for each model is the mean of the biases for all of the historical runs of that model. "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -521,10 +554,10 @@ ui <- fluidPage(
              tabPanel("Maps", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("These maps show the spatial pattern of simulated climate change for each model. 
-                                   The change is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
+                          helpText("These maps show the spatial pattern of simulated climate change and bias for each model. 
+                                   Climate change in these figures is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
                                    relative to the 1961-1990 period of the model's historical simulations. 
-                                   Maps for the Pacific Northwest are derived from raw GCM files; maps for North America are derived from ClimateNA output.
+                                   Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run. 
                                    Temperature units (K) are Kelvins, which are equivalent to degrees Celsius. 
                                    "),
                           
@@ -543,12 +576,12 @@ ui <- fluidPage(
                           
                           radioButtons("mapType", inline = F,
                                        label = "Choose the map type",
-                                       choices = c("Climate change", "Topography"),
+                                       choices = c("Climate change", "Bias", "Topography"),
                                        selected = "Climate change"),
                           
                           
                           conditionalPanel(
-                            condition = "input.mapType == 'Climate change'",
+                            condition = "input.mapType != 'Topography'",
                             
                             radioButtons("elementMap", inline = F,
                                          label = "Choose the climate element",
@@ -721,6 +754,7 @@ server <- function(input, output, session) {
   timeSeriesPlot <- function() {
     
     # user specificationS
+    observations <- input$observations
     ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name)]
     yeartime1 <- yeartimes[which(yeartime.names==input$yeartime1)]
     yeartime2 <- if(input$compare==T) yeartimes[which(yeartime.names==input$yeartime2)] else yeartimes[which(yeartime.names==input$yeartime1)]
@@ -734,6 +768,7 @@ server <- function(input, output, session) {
     
     ## Assemble the data that will be used in the plot
     alldata <- vector() # a vector of all data on the plot for setting the ylim (y axis range)
+    visibledata <- vector() # a vector of all visible data on the plot for setting the ylim (y axis range)
     num <- 1
     for(num in nums){
       
@@ -747,7 +782,8 @@ server <- function(input, output, session) {
       x1 <- unique(obs.ts.mean[,1])
       y1 <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
       baseline.obs <- mean(y1[which(x1%in%1961:1990)])
-      recent.obs <- mean(y1[(length(y1)-10):(length(y1))])
+      alldata <- c(alldata, y1) #store values in a big vector for maintaining a constant ylim
+      visibledata <- c(visibledata, y1) #store values in a big vector for maintaining a constant ylim
       
       #data for GCMs
       # ensstat <- ensstats[1]
@@ -778,7 +814,8 @@ server <- function(input, output, session) {
           }
           temp$compile <- if(length(gcms.ts)==0) rep(NA, dim(temp)[1]) else if(length(gcms.ts)==1) temp[,which(names(temp)==gcms.ts)] else apply(temp[,which(names(temp)%in%gcms.ts)], 1, substr(ensstat, 4, nchar(ensstat)), na.rm=T)
           assign(paste(ensstat, scenario, num, sep="."), temp)
-        }
+          visibledata <- c(visibledata, temp$compile) #store values in a big vector for maintaining a constant ylim
+                  }
       }
     }
     
@@ -789,7 +826,8 @@ server <- function(input, output, session) {
     } else {
       ylab <- if("PPT"%in%c(element1, element2)) bquote(Precipitation~"("*mm*")"~or~Mean ~ temperature ~ "(" * degree * C * ")") else element.names.units[[1]]
     }
-    plot(0, col="white", xlim=c(1900, 2100), ylim=range(alldata, na.rm = T), xaxs="i", tck=0, xlab="", ylab=ylab)
+    plot(0, col="white", xlim=c(1900, 2100), ylim=range(if(input$yfit==T) visibledata else alldata, na.rm = T), xaxs="i", xaxt="n", tck=0, xlab="", ylab=ylab)
+    axis(1, at=seq(1850,2100,25), labels = seq(1850,2100,25), tck=0)
     
     num <- 1
     for(num in nums){
@@ -801,13 +839,21 @@ server <- function(input, output, session) {
       x1 <- unique(obs.ts.mean[,1])
       y1 <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
       baseline.obs <- mean(y1[which(x1%in%1961:1990)])
-      recent.obs <- mean(y1[(length(y1)-10):(length(y1))])
+      recent.climatebc <- mean(y1[which(x1%in%2012:2021)])
       
       # data for era5
-      if(input$era5==T){
+      if("era5"%in%observations){
         era5.ts.mean <- read.csv(paste("data/ts.era5.mean.", ecoprov, ".csv", sep=""))
         x2 <- unique(era5.ts.mean[,1])
         y2 <- era5.ts.mean[,which(names(era5.ts.mean)==variable)]
+      }
+      
+      # data for pcic
+      if("pcic"%in%observations){
+        pcic.ts.mean <- read.csv(paste("data/ts.pcic.mean.", ecoprov, ".csv", sep=""))
+      x3 <- unique(pcic.ts.mean[,1])
+      y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)]) 
+      recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
       }
       
       if(input$compile==T) gcms.ts <- "compile" #this prevents the plotting of individual GCM projections and plots a single envelope for the ensemble as a whole. 
@@ -837,7 +883,7 @@ server <- function(input, output, session) {
           
           if(scenario != "historical"){
             par(xpd=T)
-            baseline <- mean(ensmean.historical[1:50])
+            baseline <- mean(ensmean.historical[111:140])
             projected <- mean(ensmean[(length(x)-10):(length(x))])
             if(element=="PPT"){
               change <- round(projected/baseline-1,2)
@@ -860,6 +906,13 @@ server <- function(input, output, session) {
         print(gcm)
       }
       
+      # overlay the ensemble mean lines on top of all polygons
+      if(input$yearlines==T){
+        for(n in seq(1905, 2095, 5)){
+          lines(c(n, n), c(-9999, 9999), col="grey", lty=2)
+        }
+      }
+      
       # Text to identify the time of year
       # if(input$compare==T){
       if(element1==element2){
@@ -871,33 +924,60 @@ server <- function(input, output, session) {
       text(1925,mean(temp$compile[60:80]), label, col="black", pos=3, font=2, cex=1)
       # }
       
-      # add in observations
-      obs.color <- "blue"
-      lines(x1[which(x1<1951)], y1[which(x1<1951)], lwd=3, lty=3, col=obs.color)
-      lines(x1[which(x1>1949)], y1[which(x1>1949)], lwd=3, col=obs.color)
-      if(element=="PPT"){
-        change <- round(recent.obs/baseline.obs-1,2)
-        text(2018,recent.obs, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=obs.color, pos=4, font=2, cex=1)
-      } else {
-        change <- round(recent.obs-baseline.obs,1)
-        text(2018,recent.obs, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=obs.color, pos=4, font=2, cex=1)
+      # add in PCIC observations
+      pcic.color <- "blue"
+      if("pcic"%in%observations){
+        end <- sum(!is.na(y3))
+        lines(x3[which(x3<1951)], y3[which(x3<1951)], lwd=3, lty=3, col=pcic.color)
+        lines(x3[which(x3>1949)], y3[which(x3>1949)], lwd=3, col=pcic.color)
+        # points(x3[end], y3[end], pch=16, cex=1, col=pcic.color)
+        # text(x3[end], y3[end], x3[end], pos= if(y3[end] < y3[end-1]) 1 else 3, srt=90, col=pcic.color, cex=1)
+        if(element=="PPT"){
+          change <- round(recent.pcic/baseline.obs-1,2)
+          text(2021,recent.pcic, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=pcic.color, pos=4, font=2, cex=1)
+        } else {
+          change <- round(recent.pcic-baseline.obs,1)
+          text(2021,recent.pcic, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=pcic.color, pos=4, font=2, cex=1)
+        }
+        lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=pcic.color)
+        lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=pcic.color)
+        lines(c(2012,2021), rep(recent.pcic, 2), lty=2, col=pcic.color)
       }
-      lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=obs.color)
-      lines(c(1990,2019), rep(baseline.obs, 2), lty=2, col=obs.color)
       
+      # add in ClimateBC observations
+      obs.color <- "black"
+        if("climatebc"%in%observations){
+          lines(x1[which(x1<1951)], y1[which(x1<1951)], lwd=1.5, lty=3, col=obs.color)
+          lines(x1[which(x1>1949)], y1[which(x1>1949)], lwd=1.5, col=obs.color)
+          if(!("pcic"%in%observations)){
+            if(element=="PPT"){
+            change <- round(recent.climatebc/baseline.obs-1,2)
+            text(2019,recent.climatebc, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=obs.color, pos=4, font=2, cex=1)
+          } else {
+            change <- round(recent.climatebc-baseline.obs,1)
+            text(2019,recent.climatebc, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=obs.color, pos=4, font=2, cex=1)
+          }
+        }
+        lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=obs.color)
+        lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=obs.color)
+        lines(c(2012,2021), rep(recent.climatebc, 2), lty=2, col=obs.color)
+      }
+      
+      # add in era5 observations
       era5.color <- "darkorange"
-      if(input$era5==T){
+      if("era5"%in%observations){
         lines(x2, y2, col=era5.color, lwd=2)
       }
-      
+
       #legend
-      a <- 1
-      b <- if(input$era5==T) 2 else NA
-      c <- if(length(gcms.ts>0)) 3 else NA
-      s <- !is.na(c(a,b,c))
-      legend.GCM <- if(input$mode=="Ensemble") paste("Simulations (", length(input$gcms.ts2), "GCMs)", sep="")  else paste("Simulations (", input$gcms.ts1, ")", sep="")
-      legend("topleft", title = "Historical Period", legend=c("Station observations", "ERA5 reanalysis", legend.GCM)[s], bty="n",
-             lty=c(1,1,NA)[s], col=c(obs.color, era5.color, NA)[s], lwd=c(3,2,NA)[s], pch=c(NA,NA, 22)[s], pt.bg = c(NA, NA, colScheme[1])[s], pt.cex=c(NA,NA,2)[s])
+      a <- if("pcic"%in%observations) 1 else NA
+      b <- if("climatebc"%in%observations) 2 else NA
+      c <- if("era5"%in%observations) 3 else NA
+      d <- if(length(gcms.ts>0)) 4 else NA
+      s <- !is.na(c(a,b,c,d))
+      legend.GCM <- if(input$mode=="Ensemble") paste("Simulations (", length(input$gcms.ts2), " GCMs)", sep="")  else paste("Simulations (", input$gcms.ts1, ")", sep="")
+      legend("topleft", title = "Historical Period", legend=c("Observed (PCIC)", "Observed (ClimateBC)", "ERA5 reanalysis", legend.GCM)[s], bty="n",
+             lty=c(1,1,1,NA)[s], col=c(pcic.color, obs.color, era5.color, NA)[s], lwd=c(3,1.5,2,NA)[s], pch=c(NA,NA,NA, 22)[s], pt.bg = c(NA, NA,NA, colScheme[1])[s], pt.cex=c(NA,NA,NA,2)[s])
       
       s <- rev(which(scenarios[-1]%in%input$scenarios1))
       legend("top", title = "Future Scenarios", legend=scenario.names[-1][s], bty="n",
@@ -905,7 +985,7 @@ server <- function(input, output, session) {
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
-      mtext("  Created using https://bcgov-env.shinyapps.io/cmip6-BC\n  Copyright 2021 Province of BC\n  Contact: Colin Mahony colin.mahony@gov.bc.ca", side=1, line=-1.35, adj=0.0, font=1, cex=1, col="gray")
+      mtext("  Created using https://bcgov-env.shinyapps.io/cmip6-BC\n  Copyright 2021 Province of BC\n  Contact: Colin Mahony colin.mahony@gov.bc.ca", side=1, line=-1.35, adj=0.0, font=1, cex=1.1, col="gray")
       
       print(num)
     }
@@ -915,20 +995,20 @@ server <- function(input, output, session) {
                                   height=reactive(ifelse(!is.null(input$innerWidth),input$innerWidth*0.425,0))
   )
   
-  
+  # Plot download
   output$downloadPlot <- downloadHandler(
     filename =  "Plot.png",
-    
+
     content = function(file) {
-      
+
       pixelratio <- session$clientData$pixelratio
       width  <- session$clientData$output_timeSeries_width
       height <- session$clientData$output_timeSeries_height
-      
+
       png(file, width = width*pixelratio*3/2, height = height*pixelratio*3, res = 120*pixelratio)
       timeSeriesPlot()
       dev.off()
-    } 
+    }
   )
   
   output$ChangePlot <- renderPlotly({
@@ -1161,8 +1241,16 @@ server <- function(input, output, session) {
       yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
       
       if(input$areaMap=="Pacific Northwest"){
-        filename <- normalizePath(file.path('./www', paste("ChangeMap", input$elementMap, yeartimeMap, "png",sep=".")))
-      } else {filename <- normalizePath(file.path('./www', paste("ChangeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
+        filename <- normalizePath(file.path('./www', paste("changeMap", input$elementMap, yeartimeMap, "png",sep=".")))
+      } else {filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
+    }
+    
+    if(input$mapType=="Bias"){
+      yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
+      
+      if(input$areaMap=="Pacific Northwest"){
+        filename <- normalizePath(file.path('./www', paste("biasMap", input$elementMap, yeartimeMap, "png",sep=".")))
+      } else {filename <- normalizePath(file.path('./www', paste("biasMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
     }
     
     list(src = filename, width="100%", height="100%")
