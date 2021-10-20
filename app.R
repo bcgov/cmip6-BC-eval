@@ -239,7 +239,6 @@ ui <- fluidPage(
                                          selected = gcms[4],
                                          inline = T
                             ),
-                            
                           ),
                           
                           conditionalPanel(
@@ -420,26 +419,34 @@ ui <- fluidPage(
                           
                           checkboxInput("trajectories", label = "Include model trajectories", value = T),
                           
-                          selectInput("element1.change",
-                                      label = "x-axis: choose the climate element",
-                                      choices = as.list(element.names),
-                                      selected = element.names[1]),
+                          fluidRow(
+                            box(width = 12, 
+                                splitLayout(
+                                  checkboxInput("trajectories", label = "Show model trajectories", value = T),                                  
+                                  checkboxInput("runs", label = "Show model runs", value = F)
+                                )
+                            )
+                          ),
                           
-                          selectInput("yeartime1.change",
-                                      label = "x-axis: Choose the month/season",
-                                      choices = as.list(yeartime.names),
-                                      selected = yeartime.names[1]),
+                          div(style="display:inline-block; width: 290px",selectInput("element1.change",
+                                                                                     label = "x-axis element",
+                                                                                     choices = as.list(element.names),
+                                                                                     selected = element.names[1])),
+                          div(style="display:inline-block; width: 200px",selectInput("yeartime1.change",
+                                                                                     label = "x-axis month/season",
+                                                                                     choices = as.list(yeartime.names),
+                                                                                     selected = yeartime.names[3])),
                           
-                          selectInput("element2.change",
-                                      label = "y-axis: choose the climate element",
-                                      choices = as.list(element.names),
-                                      selected = element.names[4]),
                           
-                          selectInput("yeartime2.change",
-                                      label = "y-axis: Choose the month/season",
-                                      choices = as.list(yeartime.names),
-                                      selected = yeartime.names[1]),
-                          
+                          div(style="display:inline-block; width: 290px",selectInput("element2.change",
+                                                                                     label = "y-axis element",
+                                                                                     choices = as.list(element.names),
+                                                                                     selected = element.names[4])),
+                          div(style="display:inline-block; width: 200px",selectInput("yeartime2.change",
+                                                                                     label = "y-axis month/season",
+                                                                                     choices = as.list(yeartime.names),
+                                                                                     selected = yeartime.names[3])),
+
                           selectInput("ecoprov.name.change",
                                       label = "Choose an ecoprovince",
                                       choices = as.list(ecoprov.names),
@@ -1045,6 +1052,7 @@ server <- function(input, output, session) {
     variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
     
     data <- read.csv(paste("data/change", ecoprov, "csv", sep="."))
+    data.runs <- read.csv(paste("data/change.runs", ecoprov, "csv", sep="."))
     
     x <- data[, which(names(data)==variable1)]
     y <- data[, which(names(data)==variable2)]
@@ -1054,7 +1062,7 @@ server <- function(input, output, session) {
     y.mean <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcms.change), which(names(data)==variable2)])
     x.mean.ClimateBC <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcm.names[select]), which(names(data)==variable1)])
     y.mean.ClimateBC <- mean(data[which(data$scenario==scenario & data$proj.year==proj.year & data$gcm%in%gcm.names[select]), which(names(data)==variable2)])
-    
+
     xlim=range(x)*c(if(min(x)<0) 1.1 else 0.9, if(max(x)>0) 1.1 else 0.9)
     ylim=range(y)*c(if(min(y)<0) 1.1 else 0.9, if(max(y)>0) 1.1 else 0.9)
     
@@ -1087,6 +1095,11 @@ server <- function(input, output, session) {
       x2 <- data[c(1, which(data$scenario==scenario & data$gcm==gcm)), which(names(data)==variable1)]
       y2 <- data[c(1, which(data$scenario==scenario & data$gcm==gcm)), which(names(data)==variable2)]
       
+      #data to produce convex hull of individual runs
+      x.runs <- data.runs[which(data.runs$scenario==scenario & data.runs$proj.year==proj.year & data.runs$gcm==gcm), which(names(data.runs)==variable1)]
+      y.runs <- data.runs[which(data.runs$scenario==scenario & data.runs$proj.year==proj.year & data.runs$gcm==gcm), which(names(data.runs)==variable2)]
+      runs <- data.runs$run[which(data.runs$scenario==scenario & data.runs$proj.year==proj.year & data.runs$gcm==gcm)]
+      
       if(input$trajectories==T){
         if(length(unique(sign(diff(x2))))==1){
           x3 <- if(unique(sign(diff(x2)))==-1) rev(x2) else x2
@@ -1104,6 +1117,14 @@ server <- function(input, output, session) {
                                    marker = list(size = 8,
                                                  color = ColScheme[i]),
                                    legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+      }
+      
+      if(input$runs==T){
+        fig <- fig %>% add_markers(x=x.runs,y=y.runs, text=paste(gcm.names[i], runs), text="runs", hoverinfo="text", showlegend = F,
+                                 marker = list(size = 7,
+                                               color = ColScheme[i],
+                                               line = list(color = "black",
+                                                           width = 1)))
       }
       
       fig <- fig %>% add_markers(x=x1,y=y1, color=gcm.names[i],
