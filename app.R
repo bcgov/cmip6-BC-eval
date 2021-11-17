@@ -54,10 +54,12 @@ gcms <- names(template)[-c(1:2, length(names(template)))]
 select <- c(1,3,4,6,7,8,9,11,12,14,15,17,19)
 select8 <- c(1,6,7,8,9,14,15,17)
 gcms.select = gcms[select]
+gcms.select8 = gcms[select8]
 scenarios <- unique(template[,1])
 scenario.names <- c("Historical simulations", "SSP1-2.6", "SSP2-4.5", "SSP3-7.0", "SSP5-8.5")
 gcm.names <- as.character(modelMetadata[,1])
 gcm.names.select <- gcm.names[select]
+gcms.names.select8 = gcm.names[select8]
 
 mods <- substr(gcm.names, 1, 2)
 
@@ -214,7 +216,7 @@ ui <- fluidPage(
              tabPanel("Time Series",
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 13-model ClimateBC/NA ensemble is the default selection. Shaded areas are the minimum and maximum of the multiple simulation runs for each climate model; a line indicates there is only one simulation for that scenario. "),
+                          helpText("Compare CMIP6 climate model simulations to each other and to observations. Compile custom ensembles with and without bias correction. See projections for subregions (ecoprovinces) of BC. The 8-model subset of the ClimateBC/NA ensemble is the default selection. Shaded areas are the minimum and maximum of the multiple simulation runs for each climate model; a line indicates there is only one simulation for that scenario. "),
                           
                           tags$head(tags$script('$(document).on("shiny:connected", function(e) {
                             Shiny.onInputChange("innerWidth", window.innerWidth);
@@ -231,6 +233,33 @@ ui <- fluidPage(
                                        inline = T),
                           
                           conditionalPanel(
+                            condition = "input.mode == 'Ensemble'",
+                            
+                            fluidRow(
+                              box(width = 12,
+                                  splitLayout(cellWidths = c("75%", "25%"),
+                                              
+                                              radioButtons("default.ensemble", label="Default Ensemble",
+                                                           choiceNames = c("13-model (ClimateBC/NA)", "8-model subset"),
+                                                           choiceValues = c("13-model", "8-model"),
+                                                           selected = "8-model",
+                                                           inline = T
+                                              ),
+                                              
+                                              actionButton("reset_input", "Reset")
+                                              
+                                  )
+                              )
+                            ),
+                            
+                            checkboxInput("compile", label = "Compile into ensemble projection", value = TRUE),
+                            
+                            uiOutput('reset_gcms'), # this is the radiobutton list of gcms but it is moved to the server side to allow the reset button 
+                            
+
+                          ),
+
+                          conditionalPanel(
                             condition = "input.mode == 'Single GCM'",
                             
                             radioButtons("gcms.ts1", "Choose a global climate model:",
@@ -239,17 +268,6 @@ ui <- fluidPage(
                                          selected = gcms[4],
                                          inline = T
                             ),
-                          ),
-                          
-                          conditionalPanel(
-                            condition = "input.mode == 'Ensemble'",
-                            
-                            uiOutput('reset_gcms'), # this is the radiobutton list of gcms but it is moved to the server side to allow the reset button 
-                            
-                            actionButton("reset_input", "Reset to ClimateBC ensemble"),
-                            
-                            checkboxInput("compile", label = "Compile into ensemble projection", value = TRUE),
-                            
                           ),
                           
                           checkboxInput("biascorrect", label = "Bias correction (match 1961-90 model climate to observations)", value = TRUE),
@@ -308,7 +326,7 @@ ui <- fluidPage(
                                                                        choices = as.list(yeartime.names),
                                                                        selected = yeartime.names[3])),
                           
-                          checkboxInput("compare", label = "Compare two variables", value = T),
+                          checkboxInput("compare", label = "Compare two variables", value = F),
                           
                           conditionalPanel(
                             condition = "input.compare == true",
@@ -752,7 +770,7 @@ server <- function(input, output, session) {
         checkboxGroupInput("gcms.ts2", "Choose global climate models:",
                            choiceNames = gcm.names,
                            choiceValues = gcms,
-                           selected = gcms[select],
+                           selected = if(input$default.ensemble=="13-model") gcms[select] else gcms[select8] ,
                            inline = T
         )
     )
@@ -859,7 +877,9 @@ server <- function(input, output, session) {
       if("pcic"%in%observations){
         pcic.ts.mean <- read.csv(paste("data/ts.pcic.mean.", ecoprov, ".csv", sep=""))
       x3 <- unique(pcic.ts.mean[,1])
-      y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)]) 
+      y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)])  # apply faron's anomalies to the 1981-2010 absolute value of climatebc time series. 
+      baseline.pcic <- mean(y3[which(x3%in%1961:1990)])
+      y3 <- if(element=="PPT") y3*(baseline.obs/baseline.pcic) else y3+(baseline.obs-baseline.pcic)   # bias correct to 1961-1990 period
       recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
       }
       
