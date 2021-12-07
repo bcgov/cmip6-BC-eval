@@ -68,7 +68,6 @@ set.seed(2)
 ColScheme <- c(brewer.pal(n=12, "Paired"),sample(colors,length(gcm.names)-12))
 ColScheme[11] <- "blue"
 
-
 # Other definitions
 monthdays <- c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 monthcodes <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
@@ -117,7 +116,7 @@ ui <- fluidPage(
                                     ensemble suited for your research. </h4>")
                       )
                ),
-               column(width = 2, align = "left",
+               column(width = 3, align = "left",
                       wellPanel(
                         actionButton("link_to_timeSeries", HTML("<h4><b>Time series</b></h4>")),
                         HTML("<h5> Compare historical and future model projections against observations,
@@ -125,26 +124,26 @@ ui <- fluidPage(
                                                   with and without bias correction.</h5 >")
                       )
                ),
-               column(width = 2, align = "left",
+               column(width = 3, align = "left",
                       wellPanel(
                         actionButton("link_to_Change", HTML("<h4><b>Choose models</b></h4>")),
                         HTML("<h5>Compare model projections in a two-variable climate space. 
                                     Create smaller ensembles based on predefined or custom criteria.</h5 >")
                       )
                ),
-               column(width = 2, align = "left",
-                      wellPanel(
-                        actionButton("link_to_Bias", HTML("<h4><b>Assess Bias</b></h4>")),
-                        HTML("<h5>Assess model biases relative to historical observations.</h5 >")
-                      )
-               ),
-               column(width = 2, align = "left",
+               # column(width = 2, align = "left",
+               #        wellPanel(
+               #          actionButton("link_to_Bias", HTML("<h4><b>Assess Bias</b></h4>")),
+               #          HTML("<h5>Assess model biases relative to historical observations.</h5 >")
+               #        )
+               # ),
+               column(width = 3, align = "left",
                       wellPanel(
                         actionButton("link_to_Maps", HTML("<h4><b>Maps</b></h4>")),
                         HTML("<h5>Compare spatial variation in climate change among models. </h5 >")
                       )
                ),
-               column(width = 2, align = "left",
+               column(width = 3, align = "left",
                       wellPanel(
                         actionButton("link_to_Guidance", HTML("<h4><b>Guidance</b></h4>")),
                         HTML("<h5>Guidance for selecting models, emissions scenarios, and time periods. </h5 >")
@@ -498,80 +497,80 @@ ui <- fluidPage(
                       )
              ),
              
-             ## -----------------------------------------------------
-             ## BIAS TAB
-             
-             tabPanel("Assess bias", 
-                      sidebarLayout(
-                        sidebarPanel(
-                          helpText("Compare bias among models, relative to observations. Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run. The labelled point for each model is the mean of the biases for all of the historical runs of that model. "),
-                          
-                          tags$head(tags$script('$(document).on("shiny:connected", function(e) {
-                            Shiny.onInputChange("innerWidth", window.innerWidth);
-                            });
-                            $(window).resize(function(e) {
-                            Shiny.onInputChange("innerWidth", window.innerWidth);
-                            });
-                            ')),
-                          
-                          checkboxInput("ClimateBC", label = "Reduce to the ClimateBC/NA ensemble", value = TRUE),
-                          
-                          checkboxInput("showruns", label = "Show scatter of model runs", value = TRUE),
-                          
-                          selectInput("element3",
-                                      label = "Choose the climate element",
-                                      choices = as.list(element.names),
-                                      selected = element.names[2]),
-                          
-                          selectInput("yeartime3",
-                                      label = "Choose the month/season",
-                                      choices = as.list(yeartime.names),
-                                      selected = yeartime.names[3]),
-                          
-                          
-                          selectInput("element4",
-                                      label = "Choose a climate element for comparison",
-                                      choices = as.list(element.names),
-                                      selected = element.names[3]),
-                          
-                          selectInput("yeartime4",
-                                      label = "Choose a month/season for comparison",
-                                      choices = as.list(yeartime.names),
-                                      selected = yeartime.names[3]),
-                          
-                          checkboxInput("equalscale", label = "Equal-scale axes", value = F),
-                          
-                          selectInput("ecoprov.name.II",
-                                      label = "Choose an ecoprovince",
-                                      choices = as.list(ecoprov.names),
-                                      selected = ecoprov.names[1]),
-                          
-                          img(src = "Ecoprovinces_Title.png", height = 1861*1/5, width = 1993*1/5)
-                        ),    
-                        
-                        mainPanel(
-                          
-                          plotlyOutput(outputId = "BiasPlot", height="600px")
-                          
-                        )
-                      ),
-                      column(width = 12,
-                             style = "background-color:#003366; border-top:2px solid #fcba19;",
-                             
-                             tags$footer(class="footer",
-                                         tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
-                                                  tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                                          tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
-                                                  )
-                                         )
-                             )
-                      )
-             ),
+             # ## -----------------------------------------------------
+             # ## BIAS TAB
+             # 
+             # tabPanel("Assess bias", 
+             #          sidebarLayout(
+             #            sidebarPanel(
+             #              helpText("Compare bias among models, relative to observations. Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run. The labelled point for each model is the mean of the biases for all of the historical runs of that model. "),
+             #              
+             #              tags$head(tags$script('$(document).on("shiny:connected", function(e) {
+             #                Shiny.onInputChange("innerWidth", window.innerWidth);
+             #                });
+             #                $(window).resize(function(e) {
+             #                Shiny.onInputChange("innerWidth", window.innerWidth);
+             #                });
+             #                ')),
+             #              
+             #              checkboxInput("ClimateBC", label = "Reduce to the ClimateBC/NA ensemble", value = TRUE),
+             #              
+             #              checkboxInput("showruns", label = "Show scatter of model runs", value = TRUE),
+             #              
+             #              selectInput("element3",
+             #                          label = "Choose the climate element",
+             #                          choices = as.list(element.names),
+             #                          selected = element.names[2]),
+             #              
+             #              selectInput("yeartime3",
+             #                          label = "Choose the month/season",
+             #                          choices = as.list(yeartime.names),
+             #                          selected = yeartime.names[3]),
+             #              
+             #              
+             #              selectInput("element4",
+             #                          label = "Choose a climate element for comparison",
+             #                          choices = as.list(element.names),
+             #                          selected = element.names[3]),
+             #              
+             #              selectInput("yeartime4",
+             #                          label = "Choose a month/season for comparison",
+             #                          choices = as.list(yeartime.names),
+             #                          selected = yeartime.names[3]),
+             #              
+             #              checkboxInput("equalscale", label = "Equal-scale axes", value = F),
+             #              
+             #              selectInput("ecoprov.name.II",
+             #                          label = "Choose an ecoprovince",
+             #                          choices = as.list(ecoprov.names),
+             #                          selected = ecoprov.names[1]),
+             #              
+             #              img(src = "Ecoprovinces_Title.png", height = 1861*1/5, width = 1993*1/5)
+             #            ),    
+             #            
+             #            mainPanel(
+             #              
+             #              plotlyOutput(outputId = "BiasPlot", height="600px")
+             #              
+             #            )
+             #          ),
+             #          column(width = 12,
+             #                 style = "background-color:#003366; border-top:2px solid #fcba19;",
+             #                 
+             #                 tags$footer(class="footer",
+             #                             tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+             #                                      tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+             #                                              tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+             #                                      )
+             #                             )
+             #                 )
+             #          )
+             # ),
              
              ## -----------------------------------------------------
              ## Maps TAB
@@ -579,10 +578,9 @@ ui <- fluidPage(
              tabPanel("Maps", 
                       sidebarLayout(
                         sidebarPanel(
-                          helpText("These maps show the spatial pattern of simulated climate change and bias for each model. 
-                                   Climate change in these figures is the mean climate of the 2041-2070 period of the SSP2-4.5 simulations 
-                                   relative to the 1961-1990 period of the model's historical simulations. 
-                                   Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run. 
+                          helpText("These maps show the spatial pattern of simulated climate change for each model relative to the 1961-1990 period. 
+                                   All maps are derived from raw GCM files.
+                                   Bias is the difference between the observed 1961-1990 climate (sourced from ClimateBC) and the simulated 1961-1990 climate for each model run.
                                    Temperature units (K) are Kelvins, which are equivalent to degrees Celsius. 
                                    "),
                           
@@ -596,17 +594,16 @@ ui <- fluidPage(
                           
                           radioButtons("areaMap", inline = F,
                                        label = "Choose the zoom level",
-                                       choices = c("Pacific Northwest", "North America"),
-                                       selected = "Pacific Northwest"),
+                                       choices = c("North America", "Pacific Northwest"),
+                                       selected = "North America"),
                           
                           radioButtons("mapType", inline = F,
                                        label = "Choose the map type",
                                        choices = c("Climate change", "Bias", "Topography"),
                                        selected = "Climate change"),
                           
-                          
                           conditionalPanel(
-                            condition = "input.mapType != 'Topography'",
+                            condition = "input.mapType == 'Bias'",
                             
                             radioButtons("elementMap", inline = F,
                                          label = "Choose the climate element",
@@ -635,6 +632,88 @@ ui <- fluidPage(
                               condition = "input.seasonsOrMonths == 'Months'",
                               
                               sliderTextInput("monthslider", label = "Choose a month", choices = month.abb, selected = month.abb[7])
+                            )
+                          ),
+                          
+                          conditionalPanel(
+                            condition = "input.mapType == 'Climate change'",
+                            
+                            radioButtons("elementMap", inline = F,
+                                         label = "Choose the climate element",
+                                         choiceNames = as.list(element.names[-1]),
+                                         choiceValues = as.list(elements[-1]),
+                                         selected = elements[2]),
+                            
+                            radioButtons("seasonsOrMonths", "Months or Seasons",
+                                         choiceNames = c("Months", "Seasons"),
+                                         choiceValues = c("Months", "Seasons"),
+                                         selected = "Seasons",
+                                         inline = T),
+                            
+                            conditionalPanel(
+                              condition = "input.seasonsOrMonths == 'Seasons'",
+                              
+                              radioGroupButtons(
+                                inputId = "seasonbuttons",
+                                label = "Choose a season",
+                                choices = season.names, 
+                                selected = season.names[3]
+                              ),
+                              
+                              conditionalPanel(
+                                condition = "input.areaMap == 'North America'",
+                                
+                                sliderTextInput("proj.year.map", 
+                                                label = "Choose a time slice", 
+                                                choices = proj.year.names, 
+                                                selected = proj.year.names[3]),
+                                
+                                sliderTextInput("scenario.map", 
+                                                label = "Choose emissions scenario", 
+                                                choices = scenario.names[-1], 
+                                                selected = scenario.names[3]),
+                                
+                              ),
+                              
+                              conditionalPanel(
+                                condition = "input.areaMap == 'Pacific Northwest'",
+                                
+                                radioButtons("proj.year.map.fixed1", inline = TRUE,
+                                             label = "time slice",
+                                             choiceNames = proj.year.names[3],
+                                             choiceValues = proj.years[3],
+                                             selected = proj.years[3]),
+                                
+                                radioButtons("scenario.map.fixed1", "emissions scenario",
+                                             choiceNames = scenario.names[3],
+                                             choiceValues = scenarios[3],
+                                             selected = scenarios[3],
+                                             inline = T)
+                                
+                              ),
+                              
+                            ),
+                            
+                            conditionalPanel(
+                              condition = "input.seasonsOrMonths == 'Months'",
+                              
+                              sliderTextInput("monthslider", 
+                                              label = "Choose a month", 
+                                              choices = month.abb, 
+                                              selected = month.abb[7]),
+                              
+                              radioButtons("proj.year.map.fixed2", inline = TRUE,
+                                           label = "time slice",
+                                           choiceNames = proj.year.names[3],
+                                           choiceValues = proj.years[3],
+                                           selected = proj.years[3]),
+                              
+                              radioButtons("scenario.map.fixed2", "emissions scenario",
+                                           choiceNames = scenario.names[3],
+                                           choiceValues = scenarios[3],
+                                           selected = scenarios[3],
+                                           inline = T)
+                              
                             )
                           )
                         ),    
@@ -751,10 +830,10 @@ server <- function(input, output, session) {
     updateNavbarPage(session, "CMIP6-BC", selected="Choose models")
   })
   
-  observeEvent(input$link_to_Bias, {
-    updateNavbarPage(session, "CMIP6-BC", selected="Assess bias")
-  })
-  
+  # observeEvent(input$link_to_Bias, {
+  #   updateNavbarPage(session, "CMIP6-BC", selected="Assess bias")
+  # })
+  # 
   observeEvent(input$link_to_Maps, {
     updateNavbarPage(session, "CMIP6-BC", selected="Maps")
   })
@@ -1180,94 +1259,94 @@ server <- function(input, output, session) {
     }
   )
   
-  output$BiasPlot <- renderPlotly({
-    
-    # ecoprov <- ecoprovs[1]
-    # yeartime1 <- yeartimes[1]
-    # yeartime2 <- yeartimes[3]
-    # element1 <- elements[4]
-    # element2 <- elements[4]
-    # xfun <- 1
-    # yfun <- 1
-    # showruns <- T
-    # ClimateBC <- T
-    
-    ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name.II)]
-    yeartime1 <- yeartimes[which(yeartime.names==input$yeartime3)]
-    yeartime2 <- yeartimes[which(yeartime.names==input$yeartime4)] 
-    element1 <- elements[which(element.names==input$element3)]
-    element2 <- elements[which(element.names==input$element4)] 
-    xfun <- 1
-    yfun <- 1
-    showruns <- input$showruns
-    ClimateBC <- input$ClimateBC
-    equalscale <- input$equalscale
-    
-    variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
-    variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
-    
-    data.mean <- read.csv(paste("data/summary.mean", ecoprov, "csv", sep="."), stringsAsFactors = F)
-    # data.sd <- read.csv(paste("data/summary.sd", ecoprov, "csv", sep="."), stringsAsFactors = F)
-    # data.sd[,grep("PPT", names(data.bias))] <- data.sd[,grep("PPT", names(data.bias))]/data.mean[,grep("PPT", names(data.bias))] # convert sd to coefficient of variation for precipitation
-    # data.sd[,-c(1:2)] <- sweep(data.sd[,-c(1:2)], MARGIN=2, STATS=as.vector(unlist(data.sd[1,-c(1:2)])), "/")-1 # express sd relative to observational
-    data.bias <- data.mean
-    data.bias[,-c(1:2)] <- sweep(data.mean[,-c(1:2)], MARGIN=2, STATS=as.vector(unlist(data.mean[1,-c(1:2)])), "-")
-    data.bias[,grep("PPT", names(data.bias))] <- sweep(data.mean[,grep("PPT", names(data.mean))], MARGIN=2, STATS=as.vector(unlist(data.mean[1,grep("PPT", names(data.mean))])), "/")-1 #express bias as relative for precipitation
-    
-    x <- get(paste("data", funs[xfun], sep="."))[, which(names(data.mean)==variable1)]
-    y <- get(paste("data", funs[yfun], sep="."))[, which(names(data.mean)==variable2)]
-    
-    # xlim=if(variable.type1=="ratio") range(x) else if(min(x)<0) range(x) else c(0, max(x))
-    # ylim=if(variable.type2=="ratio") range(y) else if(min(y)<0) range(y) else c(0, max(y))
-    xlim=range(x)*c(if(min(x)<0) 1.1 else 0.9, if(max(x)>0) 1.1 else 0.9)
-    ylim=range(y)*c(if(min(y)<0) 1.1 else 0.9, if(max(y)>0) 1.1 else 0.9)
-    
-    # fig <- plot_ly(x=x,y=y, type = 'scatter', mode = 'markers', marker = list(color ="white"), hoverinfo="none")
-    fig <- plot_ly(x=x,y=y, type = NULL)
-    
-    fig <- fig %>% layout(xaxis = list(title=paste(fun.names[xfun], variable.names$Variable[which(variable.names$Code==variable1)]), 
-                                       range=xlim), 
-                          yaxis = list(title=paste(fun.names[yfun], variable.names$Variable[which(variable.names$Code==variable2)]),
-                                       range=ylim)
-    )
-    
-    gcms.bias <- if(ClimateBC==T) unique(data.mean$gcm[!is.na(data.mean$run)])[select] else unique(data.mean$gcm[!is.na(data.mean$run)])
-    mods <- substr(gcm.names, 1, 2)
-    
-    for(gcm in gcms.bias){
-      i=which(gcm.names==gcm)
-      j=which(gcms.bias==gcm)
-      s=which(data.mean$gcm==gcm)
-      
-      if(showruns==T){
-        fig <- fig %>% add_markers(x=x[s],y=y[s], color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
-                                   marker = list(size = 8,
-                                                 color = ColScheme[i]),
-                                   legendgroup=paste("group", i, sep=""), showlegend = FALSE)
-      }
-      
-      fig <- fig %>% add_markers(x=mean(x[s]),y=mean(y[s]), color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
-                                 marker = list(size = 20,
-                                               color = ColScheme[i],
-                                               line = list(color = "black",
-                                                           width = 1)),
-                                 legendgroup=paste("group", i, sep=""))
-      
-      fig <- fig %>% add_annotations(x=mean(x[s]),y=mean(y[s]), text = sprintf("<b>%s</b>", mods[i]), xanchor = 'center', yanchor = 'center', showarrow = F,
-                                     legendgroup=paste("group", i, sep="")    )
-      
-      
-    }
-    
-    if(equalscale==T) fig <- fig %>% layout(yaxis=list(scaleanchor="x", scaleratio=1))
-    
-    if(element1=="PPT") fig <- fig %>% layout(xaxis = list(tickformat = "%"))
-    if(element2=="PPT") fig <- fig %>% layout(yaxis = list(tickformat = "%"))
-    
-    fig
-    
-  }
-  )
+  # output$BiasPlot <- renderPlotly({
+  #   
+  #   # ecoprov <- ecoprovs[1]
+  #   # yeartime1 <- yeartimes[1]
+  #   # yeartime2 <- yeartimes[3]
+  #   # element1 <- elements[4]
+  #   # element2 <- elements[4]
+  #   # xfun <- 1
+  #   # yfun <- 1
+  #   # showruns <- T
+  #   # ClimateBC <- T
+  #   
+  #   ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name.II)]
+  #   yeartime1 <- yeartimes[which(yeartime.names==input$yeartime3)]
+  #   yeartime2 <- yeartimes[which(yeartime.names==input$yeartime4)] 
+  #   element1 <- elements[which(element.names==input$element3)]
+  #   element2 <- elements[which(element.names==input$element4)] 
+  #   xfun <- 1
+  #   yfun <- 1
+  #   showruns <- input$showruns
+  #   ClimateBC <- input$ClimateBC
+  #   equalscale <- input$equalscale
+  #   
+  #   variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
+  #   variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
+  #   
+  #   data.mean <- read.csv(paste("data/summary.mean", ecoprov, "csv", sep="."), stringsAsFactors = F)
+  #   # data.sd <- read.csv(paste("data/summary.sd", ecoprov, "csv", sep="."), stringsAsFactors = F)
+  #   # data.sd[,grep("PPT", names(data.bias))] <- data.sd[,grep("PPT", names(data.bias))]/data.mean[,grep("PPT", names(data.bias))] # convert sd to coefficient of variation for precipitation
+  #   # data.sd[,-c(1:2)] <- sweep(data.sd[,-c(1:2)], MARGIN=2, STATS=as.vector(unlist(data.sd[1,-c(1:2)])), "/")-1 # express sd relative to observational
+  #   data.bias <- data.mean
+  #   data.bias[,-c(1:2)] <- sweep(data.mean[,-c(1:2)], MARGIN=2, STATS=as.vector(unlist(data.mean[1,-c(1:2)])), "-")
+  #   data.bias[,grep("PPT", names(data.bias))] <- sweep(data.mean[,grep("PPT", names(data.mean))], MARGIN=2, STATS=as.vector(unlist(data.mean[1,grep("PPT", names(data.mean))])), "/")-1 #express bias as relative for precipitation
+  #   
+  #   x <- get(paste("data", funs[xfun], sep="."))[, which(names(data.mean)==variable1)]
+  #   y <- get(paste("data", funs[yfun], sep="."))[, which(names(data.mean)==variable2)]
+  #   
+  #   # xlim=if(variable.type1=="ratio") range(x) else if(min(x)<0) range(x) else c(0, max(x))
+  #   # ylim=if(variable.type2=="ratio") range(y) else if(min(y)<0) range(y) else c(0, max(y))
+  #   xlim=range(x)*c(if(min(x)<0) 1.1 else 0.9, if(max(x)>0) 1.1 else 0.9)
+  #   ylim=range(y)*c(if(min(y)<0) 1.1 else 0.9, if(max(y)>0) 1.1 else 0.9)
+  #   
+  #   # fig <- plot_ly(x=x,y=y, type = 'scatter', mode = 'markers', marker = list(color ="white"), hoverinfo="none")
+  #   fig <- plot_ly(x=x,y=y, type = NULL)
+  #   
+  #   fig <- fig %>% layout(xaxis = list(title=paste(fun.names[xfun], variable.names$Variable[which(variable.names$Code==variable1)]), 
+  #                                      range=xlim), 
+  #                         yaxis = list(title=paste(fun.names[yfun], variable.names$Variable[which(variable.names$Code==variable2)]),
+  #                                      range=ylim)
+  #   )
+  #   
+  #   gcms.bias <- if(ClimateBC==T) unique(data.mean$gcm[!is.na(data.mean$run)])[select] else unique(data.mean$gcm[!is.na(data.mean$run)])
+  #   mods <- substr(gcm.names, 1, 2)
+  #   
+  #   for(gcm in gcms.bias){
+  #     i=which(gcm.names==gcm)
+  #     j=which(gcms.bias==gcm)
+  #     s=which(data.mean$gcm==gcm)
+  #     
+  #     if(showruns==T){
+  #       fig <- fig %>% add_markers(x=x[s],y=y[s], color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
+  #                                  marker = list(size = 8,
+  #                                                color = ColScheme[i]),
+  #                                  legendgroup=paste("group", i, sep=""), showlegend = FALSE)
+  #     }
+  #     
+  #     fig <- fig %>% add_markers(x=mean(x[s]),y=mean(y[s]), color=gcm.names[i], text=gcm.names[i], hoverinfo="text",
+  #                                marker = list(size = 20,
+  #                                              color = ColScheme[i],
+  #                                              line = list(color = "black",
+  #                                                          width = 1)),
+  #                                legendgroup=paste("group", i, sep=""))
+  #     
+  #     fig <- fig %>% add_annotations(x=mean(x[s]),y=mean(y[s]), text = sprintf("<b>%s</b>", mods[i]), xanchor = 'center', yanchor = 'center', showarrow = F,
+  #                                    legendgroup=paste("group", i, sep="")    )
+  #     
+  #     
+  #   }
+  #   
+  #   if(equalscale==T) fig <- fig %>% layout(yaxis=list(scaleanchor="x", scaleratio=1))
+  #   
+  #   if(element1=="PPT") fig <- fig %>% layout(xaxis = list(tickformat = "%"))
+  #   if(element2=="PPT") fig <- fig %>% layout(yaxis = list(tickformat = "%"))
+  #   
+  #   fig
+  #   
+  # }
+  # )
   
   output$changeMap <- renderImage({
     
@@ -1277,13 +1356,17 @@ server <- function(input, output, session) {
       } else {filename <- normalizePath(file.path('./www', paste("Orography.NorthAmerica.png",sep=".")))}
     }
     
-    
     if(input$mapType=="Climate change"){
       yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
       
       if(input$areaMap=="Pacific Northwest"){
         filename <- normalizePath(file.path('./www', paste("changeMap", input$elementMap, yeartimeMap, "png",sep=".")))
-      } else {filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))}
+      } else { if(input$seasonsOrMonths == "Seasons"){
+        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, scenarios[which(scenario.names==input$scenario.map)], c(2001, 2021, 2041, 2061, 2081)[which(proj.year.names==input$proj.year.map)] , "png",sep=".")))
+      } else {
+        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))
+      }
+      }
     }
     
     if(input$mapType=="Bias"){
