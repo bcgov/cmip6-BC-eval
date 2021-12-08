@@ -54,15 +54,13 @@ This tab allows users to understand the differences among models in a plot of pr
 
 **Data download**--The "download data" button downloads the full data table (all models/periods/scenarios/variables) of changes for the selected ecoprovince. The first row of the table is the 1961-1990 reference period; it is zero for all variables since this is the baseline against which changes are measured. 
 
-#### The Bias tab
+#### The Maps tab
+
+This tab primarily displays maps of climate change relative to the 1961-1990 reference period. These change values are calculated with the same method as the change values plotted in the Choose Models tab. The maps are created using the raw climate model data, and show the grid resolution of each climate model. For reference, this tab also displays the model topography, i.e., the elevation assigned to each grid cell. The final panel of the elevation maps shows the 0.5^o "common grid" that all global climate models were interpolated to for calculation of the data plotted in the other tabs.  
 
 This tab shows the bias of each model in each climate variable. Bias is the degree to which a model simulation differs from the observed climate over a reference period (1961-1990 in this case). Bias is an important consideration in selecting models for regional climate analysis, even where these biases are removed through bias correction. Bias correction as performed in ClimateBC disrupts the physical connection between climate variables, and the amount of these distortions increase with the size of the biases in the simulation. For this reason, models with small biases are preferable to models with large biases, all else being equal. 
 
 **Calculation of bias**--Bias is calculated by subtracting (dividing for precipitation) the observed 1961-1990 climate from the simulated 1961-1990 climate for each model run. The bias for each model is the mean of the biases for all of the historical runs of that model. 
-
-#### The Maps tab
-
-This tab primarily displays maps of climate change relative to the 1961-1990 reference period. These change values are calculated with the same method as the change values plotted in the Choose Models tab. The maps are created using the raw climate model data, and show the grid resolution of each climate model. For reference, this tab also displays the model topography, i.e., the elevation assigned to each grid cell. The final panel of the elevation maps shows the 0.5^o "common grid" that all global climate models were interpolated to for calculation of the data plotted in the other tabs.  
 
 ### Selection of the ClimateBC/NA CMIP6 ensemble
 
@@ -118,7 +116,7 @@ A fifth model, UKESM1-0-LL, also has very high climate sensitivity, similar to C
 
 The 8-model subset has a mean global ECS of 3.4^(o)C (2.6-4.8^(o)C). The 9-model subset that includes UKESM1-0-LL has a mean global ECS of 3.6^(o)C (2.6-5.4^(o)C). 
 
-After exclusion of models using the screening criteria above, subsets of the remaining eight models (plus optional UKESM1-0-LL) are provided using the method of <a href="https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml" target="_blank">Cannon (2015)</a>. For each user-selected ensemble size, this method selects the models that span as large a range of climate changes as possible. The implementation of this method in this app used the mean of the z-standardized seasonal changes in Tmin, Tmax, and precipitation in all 20-year time periods and emissions scenarios (except SSP5-8.5). The order of model selection is unique to each ecoprovince because the relative change projected by the models differs across the province.
+After exclusion of models using the screening criteria above, subsets of the remaining eight models (plus optional UKESM1-0-LL) are provided using the method of <a href="https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml" target="_blank">Cannon (2015)</a>. For each user-selected ensemble size, this method selects the models that span as large a range of climate changes as possible. The implementation of this method in this app used the mean of the z-standardized seasonal changes in Tmin, Tmax, and precipitation in the 2061-2080 and 2081-2100 time periods and the SSP2-4.5 and SSP3-7.0 emissions scenarios. The order of model selection is unique to each ecoprovince because the relative change projected by the models differs across the province.
 
 ### Acknowledgements
 
