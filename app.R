@@ -257,7 +257,7 @@ ui <- fluidPage(
                             
 
                           ),
-
+                          
                           conditionalPanel(
                             condition = "input.mode == 'Single GCM'",
                             
@@ -300,22 +300,6 @@ ui <- fluidPage(
                                              inline = T
                           ),
                           
-                          # fluidRow(
-                          #   box(width = 12, 
-                          #       splitLayout(
-                          #         selectInput("element1",
-                          #                     label = "Choose the climate element",
-                          #                     choices = as.list(element.names),
-                          #                     selected = element.names[1]),
-                          #         
-                          #         selectInput("yeartime1",
-                          #                     label = "Choose the month/season",
-                          #                     choices = as.list(yeartime.names),
-                          #                     selected = yeartime.names[3])
-                          #       )
-                          #   )
-                          # ),
-                          
                           div(style="display:inline-block; width: 290px",selectInput("element1",
                                                                        label = "Choose the climate element",
                                                                        choices = as.list(element.names),
@@ -345,11 +329,15 @@ ui <- fluidPage(
                                       choices = as.list(ecoprov.names),
                                       selected = ecoprov.names[1]),
                           
-                          img(src = "Ecoprovinces_Title.png", height = round(1861*1/5), width = round(1993*1/5))
+                          img(src = "Ecoprovinces_Title.png", height = round(1861*1/5), width = round(1993*1/5)),
+                          
+                          sliderInput("cex", label = "font size", min = 0.8, max = 1.4, step=0.1, value=1)
                         ),
                         
                         mainPanel(
-                          
+
+                          # div(style="display:inline-block; width: 450px",downloadButton(outputId = "downloadPlot", label = "Download plot")),
+                          # div(style="display:inline-block; width: 200px", sliderInput("cex", label = "font size", min = 0.8, max = 1.4, step=0.1, value=1)),
                           downloadButton(outputId = "downloadPlot", label = "Download plot"),
                           plotOutput(outputId = "timeSeries")
                           
@@ -433,8 +421,6 @@ ui <- fluidPage(
                                        choiceValues = scenarios[-1],
                                        selected = scenarios[3],
                                        inline = T),
-                          
-                          checkboxInput("trajectories", label = "Include model trajectories", value = T),
                           
                           fluidRow(
                             box(width = 12, 
@@ -638,23 +624,23 @@ ui <- fluidPage(
                           conditionalPanel(
                             condition = "input.mapType == 'Climate change'",
                             
-                            radioButtons("elementMap", inline = F,
+                            radioButtons("elementMap2", inline = F,
                                          label = "Choose the climate element",
                                          choiceNames = as.list(element.names[-1]),
                                          choiceValues = as.list(elements[-1]),
-                                         selected = elements[2]),
+                                         selected = elements[4]),
                             
-                            radioButtons("seasonsOrMonths", "Months or Seasons",
+                            radioButtons("seasonsOrMonths2", "Months or Seasons",
                                          choiceNames = c("Months", "Seasons"),
                                          choiceValues = c("Months", "Seasons"),
                                          selected = "Seasons",
                                          inline = T),
                             
                             conditionalPanel(
-                              condition = "input.seasonsOrMonths == 'Seasons'",
+                              condition = "input.seasonsOrMonths2 == 'Seasons'",
                               
                               radioGroupButtons(
-                                inputId = "seasonbuttons",
+                                inputId = "seasonbuttons2",
                                 label = "Choose a season",
                                 choices = season.names, 
                                 selected = season.names[3]
@@ -663,12 +649,12 @@ ui <- fluidPage(
                               conditionalPanel(
                                 condition = "input.areaMap == 'North America'",
                                 
-                                sliderTextInput("proj.year.map", 
+                                sliderTextInput("proj.year.map2", 
                                                 label = "Choose a time slice", 
                                                 choices = proj.year.names, 
                                                 selected = proj.year.names[3]),
                                 
-                                sliderTextInput("scenario.map", 
+                                sliderTextInput("scenario.map2", 
                                                 label = "Choose emissions scenario", 
                                                 choices = scenario.names[-1], 
                                                 selected = scenario.names[3]),
@@ -689,15 +675,13 @@ ui <- fluidPage(
                                              choiceValues = scenarios[3],
                                              selected = scenarios[3],
                                              inline = T)
-                                
                               ),
-                              
                             ),
                             
                             conditionalPanel(
-                              condition = "input.seasonsOrMonths == 'Months'",
+                              condition = "input.seasonsOrMonths2 == 'Months'",
                               
-                              sliderTextInput("monthslider", 
+                              sliderTextInput("monthslider2", 
                                               label = "Choose a month", 
                                               choices = month.abb, 
                                               selected = month.abb[7]),
@@ -924,7 +908,7 @@ server <- function(input, output, session) {
     }
     
     # PLOT
-    par(mfrow=c(1,1), mar=c(3,3,0.1,3), mgp=c(1.75, 0.25, 0), cex=1.4)
+    par(mfrow=c(1,1), mar=c(3,3,0.1,3), mgp=c(1.75, 0.25, 0), cex=1.5*input$cex)
     if(element1==element2){
       ylab <- element.names.units[[which(elements==element1)]]
     } else {
@@ -1033,11 +1017,11 @@ server <- function(input, output, session) {
       # add in PCIC observations
       pcic.color <- "blue"
       if("pcic"%in%observations){
-        end <- sum(!is.na(y3))
+        end <- max(which(!is.na(y3)))
         lines(x3[which(x3<1951)], y3[which(x3<1951)], lwd=3, lty=3, col=pcic.color)
         lines(x3[which(x3>1949)], y3[which(x3>1949)], lwd=3, col=pcic.color)
         points(x3[end], y3[end], pch=16, cex=1, col=pcic.color)
-        text(x3[end], y3[end], x3[end], pos= 4, col=pcic.color, cex=1)
+        text(x3[end], y3[end], x3[end], pos= 4, offset = 0.25, col=pcic.color, cex=1)
         if(element=="PPT"){
           change <- round(recent.pcic/baseline.obs-1,2)
           # text(2021,recent.pcic, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=pcic.color, pos=4, font=2, cex=1)
@@ -1081,7 +1065,7 @@ server <- function(input, output, session) {
       c <- if("era5"%in%observations) 3 else NA
       d <- if(length(gcms.ts>0)) 4 else NA
       s <- !is.na(c(a,b,c,d))
-      legend.GCM <- if(input$mode=="Ensemble") paste("Simulations (", length(input$gcms.ts2), " GCMs)", sep="")  else paste("Simulations (", input$gcms.ts1, ")", sep="")
+      legend.GCM <- if(input$mode=="Ensemble") paste("Simulated (", length(input$gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", input$gcms.ts1, ")", sep="")
       legend("topleft", title = "Historical Period", legend=c("Observed (PCIC)", "Observed (ClimateBC)", "ERA5 reanalysis", legend.GCM)[s], bty="n",
              lty=c(1,1,1,NA)[s], col=c(pcic.color, obs.color, era5.color, NA)[s], lwd=c(3,1.5,2,NA)[s], pch=c(NA,NA,NA, 22)[s], pt.bg = c(NA, NA,NA, colScheme[1])[s], pt.cex=c(NA,NA,NA,2)[s])
       
@@ -1091,7 +1075,7 @@ server <- function(input, output, session) {
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
-      mtext("  Created using https://bcgov-env.shinyapps.io/cmip6-BC\n  Copyright 2021 Province of BC\n  Contact: Colin Mahony colin.mahony@gov.bc.ca", side=1, line=-1.35, adj=0.0, font=1, cex=1.1, col="gray")
+      mtext(paste(" Created using https://bcgov-env.shinyapps.io/cmip6-BC\n", if("pcic"%in%observations) "Observed anomalies calculated by Faron Anslow, Pacific Climate Impacts Consortium\n"  , "Contact: Colin Mahony colin.mahony@gov.bc.ca"), side=1, line=-1.35, adj=0.0, font=1, cex=1.1, col="gray")
       
       print(num)
     }
@@ -1348,6 +1332,7 @@ server <- function(input, output, session) {
   # }
   # )
   
+
   output$changeMap <- renderImage({
     
     if(input$mapType=="Topography"){
@@ -1357,14 +1342,14 @@ server <- function(input, output, session) {
     }
     
     if(input$mapType=="Climate change"){
-      yeartimeMap <- if(input$seasonsOrMonths=="Seasons") seasons[which(season.names==input$seasonbuttons)] else monthcodes[which(month.abb==input$monthslider)]
+      yeartimeMap <- if(input$seasonsOrMonths2=="Seasons") seasons[which(season.names==input$seasonbuttons2)] else monthcodes[which(month.abb==input$monthslider2)]
       
       if(input$areaMap=="Pacific Northwest"){
-        filename <- normalizePath(file.path('./www', paste("changeMap", input$elementMap, yeartimeMap, "png",sep=".")))
-      } else { if(input$seasonsOrMonths == "Seasons"){
-        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, scenarios[which(scenario.names==input$scenario.map)], c(2001, 2021, 2041, 2061, 2081)[which(proj.year.names==input$proj.year.map)] , "png",sep=".")))
+        filename <- normalizePath(file.path('./www', paste("changeMap", input$elementMap2, yeartimeMap, "png",sep=".")))
+      } else { if(input$seasonsOrMonths2 == "Seasons"){
+        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap2, yeartimeMap, scenarios[which(scenario.names==input$scenario.map2)], c(2001, 2021, 2041, 2061, 2081)[which(proj.year.names==input$proj.year.map2)] , "png",sep=".")))
       } else {
-        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap, yeartimeMap, "png",sep=".")))
+        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap2, yeartimeMap, "png",sep=".")))
       }
       }
     }
@@ -1395,5 +1380,9 @@ server <- function(input, output, session) {
 
 # Run the app ----
 shinyApp(ui = ui, server = server)
+
+
+
+
 
 
