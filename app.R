@@ -113,7 +113,7 @@ ui <- fluidPage(
                         HTML("<h4>This tool provides visualizations and documentation of the global climate model ensemble featured in Version 7 
                                     of ClimateBC. The ensemble is from the new generation of global climate model simulations, the sixth Coupled Model 
                                     Intercomparison Project (CMIP6). Use this tool to learn about the model simulations in ClimateBC and choose a small 
-                                    ensemble suited for your research. </h4>")
+                                    ensemble suited for your research. A similar app for North America is available at <a href='https://bcgov-env.shinyapps.io/cmip6-BC/' target='_blank'>https://bcgov-env.shinyapps.io/cmip6-NA/</a></h5></h4>")
                       )
                ),
                column(width = 2, align = "left",
@@ -152,7 +152,7 @@ ui <- fluidPage(
                column(width = 12,
                       HTML("<h4><b>Citation</b></h4>
                             <h5> <u>Please cite the contents of this app as:</u> <br>
-                            Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2021. <a href='https://eartharxiv.org/repository/view/2510/' target='_blank'>A CMIP6 ensemble for downscaled monthly climate normals over North America</a>. EarthArXiv. <a href='https://doi.org/10.31223/X5CK6Z' target='_blank'>https://doi.org/10.31223/X5CK6Z</a> </h5>
+                            Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2022. <a href='https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/joc.7566' target='_blank'>A global climate model ensemble for downscaled monthly climate normals over North America</a>. International Journal of Climatology. In press. <a href='https://doi.org/10.1002/joc.7566' target='_blank'>doi.org/10.1002/joc.7566</a> </h5>
                             <h4><b>Contributors</b></h4>
                             <h5> <u>App created by:</u><br>
                                  Colin Mahony<br>
@@ -287,7 +287,7 @@ ui <- fluidPage(
                                 splitLayout(
                                   checkboxInput("yearlines", label = "Show 5-year gridlines", value = F),
                                   
-                                  checkboxInput("yfit", label = "fit y axis to visible data", value = F)
+                                  checkboxInput("yfit", label = "fit y axis to visible data", value = T)
                                 )
                             )
                           ),
@@ -1087,14 +1087,23 @@ server <- function(input, output, session) {
   
   # Plot download
   output$downloadPlot <- downloadHandler(
-    filename =  "Plot.png",
-
+    filename =  function(){
+      paste("cmip6BC", ecoprovs[which(ecoprov.names==input$ecoprov.name)], 
+            elements[which(element.names==input$element1)], 
+            if(input$compare==T){
+              paste(yeartimes[which(yeartime.names==input$yeartime1)], 
+                    elements[which(element.names==input$element2)] ,
+                    yeartimes[which(yeartime.names==input$yeartime2)], sep=".")
+            } else {yeartimes[which(yeartime.names==input$yeartime1)]},
+            "png", sep=".")
+    },
+    
     content = function(file) {
-
+      
       pixelratio <- session$clientData$pixelratio
       width  <- session$clientData$output_timeSeries_width
       height <- session$clientData$output_timeSeries_height
-
+      
       png(file, width = width*pixelratio*3/2, height = height*pixelratio*3, res = 120*pixelratio)
       timeSeriesPlot()
       dev.off()
