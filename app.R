@@ -278,9 +278,17 @@ ui <- fluidPage(
                                              inline = T
                           ),
                           
-                          checkboxInput("showmean", label = "Show mean of projections", value = T),
-                          
                           checkboxInput("refline", label = "Show 1961-1990 baseline for models", value = T),
+                          
+                          fluidRow(
+                            box(width = 12, 
+                                splitLayout(
+                                  checkboxInput("showrange", label = "Show range of projections", value = T),
+                                  
+                                  checkboxInput("showmean", label = "Show mean of projections", value = T)
+                                )
+                            )
+                          ),
                           
                           fluidRow(
                             box(width = 12, 
@@ -292,6 +300,19 @@ ui <- fluidPage(
                             )
                           ),
                           
+                          fluidRow(
+                            box(width = 12,
+                                splitLayout(cellWidths = c("75%", "25%"),
+                                            
+                                            radioButtons("compare.ensemble", label="Compare to a predefined ensemble",
+                                                         choiceNames = c("None", "13-model (ClimateNA)", "8-model subset"),
+                                                         choiceValues = c("None", "13-model", "8-model"),
+                                                         selected = "None",
+                                                         inline = T
+                                            )
+                                )
+                            )
+                          ),
                           
                           checkboxGroupInput("observations", "Choose observational datasets",
                                              choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis"),
@@ -851,6 +872,7 @@ server <- function(input, output, session) {
     variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
     variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
     gcms.ts <- if(input$mode=="Ensemble") input$gcms.ts2 else input$gcms.ts1
+    gcms.compare <- if(input$compare.ensemble=="13-model") gcms[select] else if(input$compare.ensemble=="8-model") gcms[select8] else NA
     scenarios1 <- c("historical", input$scenarios1)
     nums <- if(input$compare==T) c(1,2) else c(1)
     
@@ -901,9 +923,10 @@ server <- function(input, output, session) {
             }
           }
           temp$compile <- if(length(gcms.ts)==0) rep(NA, dim(temp)[1]) else if(length(gcms.ts)==1) temp[,which(names(temp)==gcms.ts)] else apply(temp[,which(names(temp)%in%gcms.ts)], 1, substr(ensstat, 4, nchar(ensstat)), na.rm=T)
+          if(is.na(gcms.compare)!=T) temp$compare <- apply(temp[,which(names(temp)%in%gcms.compare)], 1, substr(ensstat, 4, nchar(ensstat)), na.rm=T)
           assign(paste(ensstat, scenario, num, sep="."), temp)
-          visibledata <- c(visibledata, temp$compile) #store values in a big vector for maintaining a constant ylim
-                  }
+          if(input$showrange==T | ensstat==ensstats[3]) visibledata <- c(visibledata, temp$compile, if(is.na(gcms.compare)!=T) temp$compare ) #store values in a big vector for maintaining a constant ylim
+        }
       }
     }
     
@@ -946,6 +969,49 @@ server <- function(input, output, session) {
       recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
       }
       
+      # time series for the comparison ensemble
+      if(input$compare.ensemble!="None"){
+        # scenario <- scenarios1[1]
+        for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
+          
+          for(ensstat in ensstats){
+            temp <- get(paste(ensstat, scenario, num, sep="."))
+            x <- temp[,1]
+            temp <- temp$compare
+            assign(ensstat, temp)
+            assign(paste("x", scenario, sep="."), x)
+            assign(paste(ensstat, scenario, sep="."), temp)
+          }
+          
+          # colScheme <- c("gray60", "seagreen", "goldenrod4", "darkorange3", "darkred")
+          colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
+          # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
+          if(input$showrange==T) polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], 0.25), border=colScheme[which(scenarios==scenario)], lty=2)
+          
+          if(scenario != "historical"){
+            par(xpd=T)
+            baseline <- mean(ensmean.historical[111:140])
+            projected <- mean(ensmean[(length(x)-5):(length(x))])
+            if(element=="PPT"){
+              change <- round(projected/baseline-1,2)
+              if(is.na(change)==F) text(2098,projected, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=colScheme[which(scenarios==scenario)], pos=4, font=1, cex=0.8)
+            } else {
+              change <- round(projected-baseline,1)
+              if(is.na(change)==F) text(2098,projected, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=colScheme[which(scenarios==scenario)], pos=4, font=1, cex=0.8)
+            }
+            par(xpd=F)
+          }
+          
+          print(scenario)
+        }
+        
+        # overlay the ensemble mean lines on top of all polygons
+        for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
+          if(input$showmean==T) lines(get(paste("x", scenario, sep=".")), get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2, lty=2)
+        }
+      }
+      
+      # time series for selected ensemble
       if(input$compile==T) gcms.ts <- "compile" #this prevents the plotting of individual GCM projections and plots a single envelope for the ensemble as a whole. 
       for(gcm in gcms.ts){
         # scenario <- scenarios1[1]
@@ -963,7 +1029,7 @@ server <- function(input, output, session) {
           # colScheme <- c("gray60", "seagreen", "goldenrod4", "darkorange3", "darkred")
           colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
           # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
-          polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
+          if(input$showrange==T) polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
           
           if(input$refline==T){
             ref.temp <- mean(ensmean.historical[111:140])
@@ -974,7 +1040,7 @@ server <- function(input, output, session) {
           if(scenario != "historical"){
             par(xpd=T)
             baseline <- mean(ensmean.historical[111:140])
-            projected <- mean(ensmean[(length(x)-10):(length(x))])
+            projected <- mean(ensmean[(length(x)-5):(length(x))])
             if(element=="PPT"){
               change <- round(projected/baseline-1,2)
               if(is.na(change)==F) text(2098,projected, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=colScheme[which(scenarios==scenario)], pos=4, font=2, cex=1)
@@ -1064,14 +1130,21 @@ server <- function(input, output, session) {
       b <- if("climatebc"%in%observations) 2 else NA
       c <- if("era5"%in%observations) 3 else NA
       d <- if(length(gcms.ts>0)) 4 else NA
-      s <- !is.na(c(a,b,c,d))
+      e <- if(input$compare.ensemble!="None") 5 else NA
+      s <- !is.na(c(a,b,c,d,e))
       legend.GCM <- if(input$mode=="Ensemble") paste("Simulated (", length(input$gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", input$gcms.ts1, ")", sep="")
-      legend("topleft", title = "Historical Period", legend=c("Observed (PCIC)", "Observed (ClimateBC)", "ERA5 reanalysis", legend.GCM)[s], bty="n",
-             lty=c(1,1,1,NA)[s], col=c(pcic.color, obs.color, era5.color, NA)[s], lwd=c(3,1.5,2,NA)[s], pch=c(NA,NA,NA, 22)[s], pt.bg = c(NA, NA,NA, colScheme[1])[s], pt.cex=c(NA,NA,NA,2)[s])
+      legend.compare <- paste("Simulated (", length(gcms.compare), " GCMs)", sep="")  
+      legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateNA)", "ERA5 reanalysis", legend.GCM, legend.compare)[s], bty="n",
+             lty=c(1,1,1,1 ,2)[s], 
+             col=c(pcic.color, obs.color, era5.color, "gray", "gray")[s], 
+             lwd=c(3,1.5,2, 2 ,2)[s], 
+             pch=c(NA,NA,NA, NA , NA)[s], 
+             pt.bg = c(NA, NA,NA, NA , NA)[s], 
+             pt.cex=c(NA,NA,NA,NA ,NA)[s])
       
       s <- rev(which(scenarios[-1]%in%input$scenarios1))
-      legend("top", title = "Future Scenarios", legend=scenario.names[-1][s], bty="n",
-             lty=c(NA,NA,NA,NA)[s], col=colScheme[-1][s], lwd=c(NA,NA,NA,NA)[s], pch=c(22, 22, 22, 22)[s], pt.bg = alpha(colScheme[-1][s], 0.35), pt.cex=c(2,2,2,2)[s])
+      legend("top", title = "Scenarios", legend=c("Historical", scenario.names[-1][s]), bty="n",
+             lty=c(NA,NA,NA,NA,NA)[c(1,s+1)], col=colScheme[c(1,s+1)], lwd=c(NA,NA,NA,NA,NA)[c(1,s+1)], pch=c(22, 22,22,22,22)[c(1,s+1)], pt.bg = alpha(colScheme[c(1,s+1)], 0.35), pt.cex=c(2,2,2,2,2)[c(1,s+1)])
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
