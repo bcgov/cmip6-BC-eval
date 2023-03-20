@@ -1,6 +1,8 @@
 # cmip6-BC-eval
 An app to visualize and evaluate CMIP6 climate simulations for British Columbia
 
+[![Lifecycle:Stable](https://img.shields.io/badge/Lifecycle-Stable-97ca00)](<Redirect-URL>)
+
 Copyright 2021 Province of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");

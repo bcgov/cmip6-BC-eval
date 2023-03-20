@@ -5,11 +5,11 @@ date: "27/11/2020"
 output: html_document
 ---
 
-## About this app
+### About this app
 
 The goal of this app is to help users to better understand the global climate model ensemble featured in Version 7 of <a href="http://climatebc.ca/" target="_blank">ClimateBC</a> and <a href="http://climatena.ca/" target="_blank">ClimateNA</a>. These models are from the new generation of global climate model simulations, the sixth Coupled Model Intercomparison Project (CMIP6; <a href="https://gmd.copernicus.org/articles/9/1937/2016/gmd-9-1937-2016.pdf" target="_blank">Eyring et al. 2016</a>), which will be featured in the upcoming 2021 IPCC sixth assessment report (AR6). CarbonBrief provides a good <a href="https://www.carbonbrief.org/cmip6-the-next-generation-of-climate-models-explained" target="_blank">explanation</a> of CMIP6 and the global results. The focus of this app is on British Columbia. 
 
-### Contributors
+#### Contributors
 App created by:<br>
 Colin Mahony<br>
 Research Climatologist<br>
@@ -18,6 +18,10 @@ colin.mahony@gov.bc.ca
 
 CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the UBC Department of Forest and Conservation Sciences
 
+#### Citation
+Please cite contents of this app as:<br> 
+Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2022. <a href='https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/joc.7566' target='_blank'>A global climate model ensemble for downscaled monthly climate normals over North America</a>. International Journal of Climatology. 42:5871-5891. <a href='https://doi.org/10.1002/joc.7566' target='_blank'>doi.org/10.1002/joc.7566</a>
+
 ### Methods
 
 **Climate Variables**--The focus of this app is on comparison of observed and modeled temperature and precipitation. There are four climate elements available: Mean temperature (T<sub>ave</sub>), mean daily maximum temperature (T<sub>max</sub>), mean daily minimum temperature (T<sub>min</sub>), and Precipitation (PPT). Since historical station observations of temperature measure T<sub>min</sub> and T<sub>max</sub>, I used these as the primary temperature elements and calculated T<sub>ave</sub> as their average (see <a href="https://www.nature.com/articles/srep04637" target="_blank">here</a> for an assessment of bias). 
@@ -25,8 +29,6 @@ CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the U
 **Emissions scenarios**--This app features climate model simulations from the ScenarioMIP project, which produces projections of future climate change based on scenarios called <a href="https://www.carbonbrief.org/explainer-how-shared-socioeconomic-pathways-explore-future-climate-change" target="_blank">Shared Socioeconomic Pathways</a>. This app features the four major ScenarioMIP SSPs: SSP1-2.6, SSP2-4.5, SSP3-7.0, and SSP5-8.5.  The SSPs begin in 2015; from 1850 to 2014, the climate models are run using historically observed emissions from natural (e.g., volcanoes) and human sources.  
 
 **Regional averages**--There is essentially no downscaling in this app. All climate model data were bilinearly interpolated to a common 0.5^o grid derived from the 025^o ERA5 grid (shown in the model topography maps in the Maps tab). Plot values are the average of the grid points within the boundaries of BC or the user-selected ecoprovince.
-
-**Observations**--Observed historical data are obtained from <a href="http://climatebc.ca/" target="_blank">ClimateBC</a> for the gridpoints of the common grid shown in the Maps tab. The observational time series is dashed prior to 1950 to indicate lower quality and quantity of weather station data. 
 
 #### The Time Series tab
 
@@ -38,7 +40,9 @@ This tab allows users to compare model simulations to each other and to observat
 
 **Compiled ensembles**--Users can compile selected models into a multi-model ensemble. In these plots, the shaded envelope shows the maxima and minima of all the single-model ensembles collectively, and the multimodel ensemble mean is the mean of the single-model ensemble means. 
 
-**ERA5 reanalysis**--A <a href="https://www.ecmwf.int/en/about/media-centre/focus/2020/fact-sheet-reanalysis" target="_blank">reanalysis</a> is a global weather model calibrated to observations. ERA5 is the state-of-the-art global reanalysis provided by the European Centre for Medium-Range Weather Forecasts <a href="https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.3803" target="_blank">(Hersbach et al. 2020)</a>. It is provided in this tab as an alternative observational time series. 
+**Station observations**--Station observations are available from two sources, <a href="http://climatebc.ca/" target="_blank">ClimateBC</a> and the Pacific Climate Impacts Consortium (<a href="https://frozen-island-96651.herokuapp.com/" target="_blank">PCIC</a>). Both sources are spatial averages of weather station observations using different methods. ClimateBC observations were obtained for the gridpoints of the common grid shown in the Maps tab. The 1960-1991 reference normals for bias correction are calculated from the ClimateBC time series. The PCIC time series are anomalies added to the 1981-2010 ClimateBC observational normals. Both observational time series are dashed prior to 1950 to indicate lower quality and quantity of weather station data. 
+
+**ERA5 reanalysis**--A <a href="https://www.ecmwf.int/en/about/media-centre/focus/2020/fact-sheet-reanalysis" target="_blank">reanalysis</a> is a global weather model calibrated to observations. ERA5 is the state-of-the-art global reanalysis provided by the European Centre for Medium-Range Weather Forecasts <a href="https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.3803" target="_blank">(Hersbach et al. 2020)</a>. No bias correction or interpolation is performed on the ERA5 time series; It is provided to indicate the degree to which the gridding method in this app is able provide a valid basis for comparing absolute climate conditions from models and observations. 
  
 #### The Choose Models tab
 
@@ -50,17 +54,15 @@ This tab allows users to understand the differences among models in a plot of pr
 
 **Data download**--The "download data" button downloads the full data table (all models/periods/scenarios/variables) of changes for the selected ecoprovince. The first row of the table is the 1961-1990 reference period; it is zero for all variables since this is the baseline against which changes are measured. 
 
-#### The Bias tab
+#### The Maps tab
+
+This tab primarily displays maps of climate change relative to the 1961-1990 reference period. These change values are calculated with the same method as the change values plotted in the Choose Models tab. The maps are created using the raw climate model data, and show the grid resolution of each climate model. For reference, this tab also displays the model topography, i.e., the elevation assigned to each grid cell. The final panel of the elevation maps shows the 0.5^o "common grid" that all global climate models were interpolated to for calculation of the data plotted in the other tabs.  
 
 This tab shows the bias of each model in each climate variable. Bias is the degree to which a model simulation differs from the observed climate over a reference period (1961-1990 in this case). Bias is an important consideration in selecting models for regional climate analysis, even where these biases are removed through bias correction. Bias correction as performed in ClimateBC disrupts the physical connection between climate variables, and the amount of these distortions increase with the size of the biases in the simulation. For this reason, models with small biases are preferable to models with large biases, all else being equal. 
 
 **Calculation of bias**--Bias is calculated by subtracting (dividing for precipitation) the observed 1961-1990 climate from the simulated 1961-1990 climate for each model run. The bias for each model is the mean of the biases for all of the historical runs of that model. 
 
-#### The Maps tab
-
-This tab primarily displays the spatial data
-
-#### Selection of the ClimateBC/NA CMIP6 ensemble
+### Selection of the ClimateBC/NA CMIP6 ensemble
 
 The goal of model selection for ClimateBC/NA was to select a set of approximately 15 models that represent the CMIP6 ensemble. The selection criteria reflect that ClimateBC/NA are primarily designed for downscaling of monthly climate normals (30-year averages): The emphasis is on representing the climate change signal produced by each model rather than on representing internal variability (model weather). From the ESGF ScenarioMIP data holdings current to December 2020, we excluded models sequentially based on 6 criteria: 
 
@@ -86,7 +88,7 @@ To provide context, this app includes all 19 models that met criteria 1-3 as of 
 
 The 13-model ensemble has a mean global equilibrium climate sensitivity (ECS) of 3.7^(o)C and a range of 1.9-5.6^(o)C, which matches the full CMIP6 ensemble ECS (3.7^(o)C; 1.8-5.6^(o)C, <a href="https://advances.sciencemag.org/content/advances/6/26/eaba1981.full.pdf" target="_blank">Meehl et al. 2020</a>). 
 
-#### Predefined subsets of the ClimateBC/NA CMIP6 ensemble
+### Predefined subsets of the ClimateBC/NA CMIP6 ensemble
 
 The 13 ClimateBC/NA models are a valid ensemble. However, some analysts may wish or need to use a lesser number of models in their analyses. To provide guidance on selecting from among the 13 models provided in ClimateBC, the "Choose models" tab of this tool offers a predefined order of exclusion of models for user-specified ensemble sizes. Models are excluded in two phases: first based on screening criteria to exclude models with lower value for the anticipated uses of ClimateBC data and second using the method of <a href="https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml" target="_blank">Cannon (2015)</a> to best represent the range of climate changes in the remaining models. 
 
@@ -114,7 +116,7 @@ A fifth model, UKESM1-0-LL, also has very high climate sensitivity, similar to C
 
 The 8-model subset has a mean global ECS of 3.4^(o)C (2.6-4.8^(o)C). The 9-model subset that includes UKESM1-0-LL has a mean global ECS of 3.6^(o)C (2.6-5.4^(o)C). 
 
-After exclusion of models using the screening criteria above, subsets of the remaining eight models (plus optional UKESM1-0-LL) are provided using the method of <a href="https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml" target="_blank">Cannon (2015)</a>. For each user-selected ensemble size, this method selects the models that span as large a range of climate changes as possible. The implementation of this method in this app used the mean of the z-standardized seasonal changes in Tmin, Tmax, and precipitation in all 20-year time periods and emissions scenarios (except SSP5-8.5). The order of model selection is unique to each ecoprovince because the relative change projected by the models differs across the province.
+After exclusion of models using the screening criteria above, subsets of the remaining eight models (plus optional UKESM1-0-LL) are provided using the method of <a href="https://journals.ametsoc.org/view/journals/clim/28/3/jcli-d-14-00636.1.xml" target="_blank">Cannon (2015)</a>. For each user-selected ensemble size, this method selects the models that span as large a range of climate changes as possible. The implementation of this method in this app used the mean of the z-standardized seasonal changes in Tmin, Tmax, and precipitation in the 2061-2080 and 2081-2100 time periods and the SSP2-4.5 and SSP3-7.0 emissions scenarios. The order of model selection is unique to each ecoprovince because the relative change projected by the models differs across the province.
 
 ### Acknowledgements
 
