@@ -301,23 +301,7 @@ ui <- fluidPage(
                           ),
                           
                                   
-                                  checkboxInput("yfit", label = "fit y axis to visible data", value = T)
-=======
-                            box(width = 12,
-                                splitLayout(cellWidths = c("75%", "25%"),
-                                            
-                                            radioButtons("compare.ensemble", label="Compare to a predefined ensemble",
-                                                         choiceNames = c("None", "13-model (ClimateNA)", "8-model subset"),
-                                                         choiceValues = c("None", "13-model", "8-model"),
-                                                         selected = "None",
-                                                         inline = T
-                                            )
->>>>>>> 6e62b310ae185088b614da4cdb0c56e2d60ee4ce
-                                )
-                            )
-                          ),
-                          
-<<<<<<< HEAD
+
                           fluidRow(
                             box(width = 12,
                                 splitLayout(cellWidths = c("75%", "25%"),
@@ -339,13 +323,6 @@ ui <- fluidPage(
                                              inline = T
                           ),
                           
-                                             choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis"),
-                                             choiceValues = c("pcic", "climatebc", "era5"),
-                                             selected = "pcic",
-                                             inline = T
-                          ),
-                          
->>>>>>> 6e62b310ae185088b614da4cdb0c56e2d60ee4ce
                           div(style="display:inline-block; width: 290px",selectInput("element1",
                                                                        label = "Choose the climate element",
                                                                        choices = as.list(element.names),
