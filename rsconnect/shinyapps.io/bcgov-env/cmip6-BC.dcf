@@ -5,8 +5,8 @@ account: bcgov-env
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3466853
-bundleId: 4621272
+bundleId: 5889148
 url: https://bcgov-env.shinyapps.io/cmip6-BC/
-when: 1621533956.85333
+when: 1652141197.75615
 asMultiple: FALSE
 asStatic: FALSE
