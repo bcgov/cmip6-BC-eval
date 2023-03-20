@@ -27,6 +27,7 @@ library("shinyLP")
 library("shinyBS")
 library("shinythemes")
 library("shinyWidgets")
+library(cobs)
 # ----------------------------------------------
 # Load the input data
 # ----------------------------------------------
@@ -864,6 +865,33 @@ server <- function(input, output, session) {
   
   timeSeriesPlot <- function() {
     
+    # test specificationS
+    observations <- "pcic"
+    ecoprov <- ecoprovs[1]
+    yeartime1 <- yeartimes[3]
+    yeartime2 <- yeartimes[1]
+    element1 <- elements[1]
+    element2 <- elements[2]
+    variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
+    variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
+    gcms.ts <- gcms[select8]
+    gcms.compare <- NA
+    scenarios1 <- c(scenarios[1:4])
+    nums <- c(1)
+    biascorrect <- T
+    showrange <- T
+    yfit <- T
+    cex <- 1
+    compare.ensemble <- "None"
+    showmean <- T
+    compile <- T
+    simplify <- T
+    refline <- T
+    yearlines <- T
+    mode <- "Ensemble"
+    gcms.ts1 <- gcms[4]
+    gcms.ts2 <- gcms[select8]
+    
     # user specificationS
     observations <- input$observations
     ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name)]
@@ -877,6 +905,19 @@ server <- function(input, output, session) {
     gcms.compare <- if(input$compare.ensemble=="13-model") gcms[select] else if(input$compare.ensemble=="8-model") gcms[select8] else NA
     scenarios1 <- c("historical", input$scenarios1)
     nums <- if(input$compare==T) c(1,2) else c(1)
+    biascorrect <- input$biascorrect
+    showrange <- input$showrange
+    yfit <- input$yfit
+    cex <- input$cex
+    compare.ensemble <- input$compare.ensemble
+    showmean <- input$showmean
+    compile <- input$compile
+    simplify <- input$simplify
+    refline <- input$refline
+    yearlines <- input$yearlines
+    mode <- input$mode
+    gcms.ts1 <- input$gcms.ts1
+    gcms.ts2 <- input$gcms.ts2
     
     ## Assemble the data that will be used in the plot
     alldata <- vector() # a vector of all data on the plot for setting the ylim (y axis range)
@@ -913,7 +954,7 @@ server <- function(input, output, session) {
           
           alldata <- c(alldata, as.vector(unlist(temp[-1]))) #store values in a big vector for maintaining a constant ylim
           # optional bias correction
-          if(input$biascorrect==T){
+          if(biascorrect==T){
             if(element=="PPT"){
               delta <- baseline.obs/baseline.mod
               delta <- delta[which(names(delta)!="compile")]
@@ -927,19 +968,19 @@ server <- function(input, output, session) {
           temp$compile <- if(length(gcms.ts)==0) rep(NA, dim(temp)[1]) else if(length(gcms.ts)==1) temp[,which(names(temp)==gcms.ts)] else apply(temp[,which(names(temp)%in%gcms.ts)], 1, substr(ensstat, 4, nchar(ensstat)), na.rm=T)
           if(is.na(gcms.compare)!=T) temp$compare <- apply(temp[,which(names(temp)%in%gcms.compare)], 1, substr(ensstat, 4, nchar(ensstat)), na.rm=T)
           assign(paste(ensstat, scenario, num, sep="."), temp)
-          if(input$showrange==T | ensstat==ensstats[3]) visibledata <- c(visibledata, temp$compile, if(is.na(gcms.compare)!=T) temp$compare ) #store values in a big vector for maintaining a constant ylim
+          if(showrange==T | ensstat==ensstats[3]) visibledata <- c(visibledata, temp$compile, if(is.na(gcms.compare)!=T) temp$compare ) #store values in a big vector for maintaining a constant ylim
         }
       }
     }
     
     # PLOT
-    par(mfrow=c(1,1), mar=c(3,3,0.1,3), mgp=c(1.75, 0.25, 0), cex=1.5*input$cex)
+    par(mfrow=c(1,1), mar=c(3,3,0.1,3), mgp=c(1.75, 0.25, 0), cex=1.5*cex)
     if(element1==element2){
       ylab <- element.names.units[[which(elements==element1)]]
     } else {
       ylab <- if("PPT"%in%c(element1, element2)) bquote(Precipitation~"("*mm*")"~or~Mean ~ temperature ~ "(" * degree * C * ")") else element.names.units[[1]]
     }
-    plot(0, col="white", xlim=c(1900, 2100), ylim=range(if(input$yfit==T) visibledata else alldata, na.rm = T), xaxs="i", xaxt="n", tck=0, xlab="", ylab=ylab)
+    plot(0, col="white", xlim=c(1900, 2100), ylim=range(if(yfit==T) visibledata else alldata, na.rm = T), xaxs="i", xaxt="n", tck=0, xlab="", ylab=ylab)
     axis(1, at=seq(1850,2100,25), labels = seq(1850,2100,25), tck=0)
     
     num <- 1
@@ -972,7 +1013,8 @@ server <- function(input, output, session) {
       }
       
       # time series for the comparison ensemble
-      if(input$compare.ensemble!="None"){
+      colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
+      if(compare.ensemble!="None"){
         # scenario <- scenarios1[1]
         for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
           
@@ -985,10 +1027,7 @@ server <- function(input, output, session) {
             assign(paste(ensstat, scenario, sep="."), temp)
           }
           
-          # colScheme <- c("gray60", "seagreen", "goldenrod4", "darkorange3", "darkred")
-          colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
-          # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
-          if(input$showrange==T) polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], 0.25), border=colScheme[which(scenarios==scenario)], lty=2)
+          if(showrange==T) polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], 0.25), border=colScheme[which(scenarios==scenario)], lty=2)
           
           if(scenario != "historical"){
             par(xpd=T)
@@ -1009,12 +1048,12 @@ server <- function(input, output, session) {
         
         # overlay the ensemble mean lines on top of all polygons
         for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
-          if(input$showmean==T) lines(get(paste("x", scenario, sep=".")), get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2, lty=2)
+          if(showmean==T) lines(get(paste("x", scenario, sep=".")), get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2, lty=2)
         }
       }
       
       # time series for selected ensemble
-      if(input$compile==T) gcms.ts <- "compile" #this prevents the plotting of individual GCM projections and plots a single envelope for the ensemble as a whole. 
+      if(compile==T) gcms.ts <- "compile" #this prevents the plotting of individual GCM projections and plots a single envelope for the ensemble as a whole. 
       for(gcm in gcms.ts){
         # scenario <- scenarios1[1]
         for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
@@ -1026,17 +1065,6 @@ server <- function(input, output, session) {
             assign(ensstat, temp)
             assign(paste("x", scenario, sep="."), x)
             assign(paste(ensstat, scenario, sep="."), temp)
-          }
-          
-          # colScheme <- c("gray60", "seagreen", "goldenrod4", "darkorange3", "darkred")
-          colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
-          # colScheme <- c("gray80", "#1d3354", "#e9dc3d", "#f11111", "#830b22")
-          if(input$showrange==T) polygon(c(x, rev(x)), c(ensmin, rev(ensmax)), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
-          
-          if(input$refline==T){
-            ref.temp <- mean(ensmean.historical[111:140])
-            lines(1961:1990, rep(ref.temp, 30), lwd=2)
-            lines(c(1990,2100), rep(ref.temp, 2), lty=2)
           }
           
           if(scenario != "historical"){
@@ -1056,27 +1084,63 @@ server <- function(input, output, session) {
           print(scenario)
         }
         
-        # overlay the ensemble mean lines on top of all polygons
-        if(input$showmean==T){
+        if(input$showrange==T) {
           for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
-            if(input$simplify==F) lines(x=get(paste("x", scenario, sep=".")), y=get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2)
-            if(scenario=="historical"){ # need to run spline through the historical/projected transition
-            x4 <- c(x.historical, get(paste("x", scenarios1[2], sep=".")))
-            y4 <- c(ensmean.historical, get(paste("ensmean", scenarios1[2], sep=".")))
-            } else {
-              x4 <- c(x.historical, get(paste("x", scenario, sep=".")))
-              y4 <- c(ensmean.historical, get(paste("ensmean", scenario, sep=".")))
+            if(input$simplify==F){
+              x <- get(paste("x", scenario, sep="."))
+              polygon(c(x, rev(x)), c(get(paste("ensmin", scenario, sep=".")), rev(get(paste("ensmax", scenario, sep=".")))), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
             }
-            s4 <- smooth.spline(x4,y4, df=10) 
-            subset <- which(x4%in%get(paste("x", scenario, sep=".")))
-            if(input$simplify==T) lines(x=s4$x[subset], y=s4$y[subset], col=colScheme[which(scenarios==scenario)], lwd=2)
+            if(input$simplify==T){
+              if(scenario=="historical"){ # need to run spline through the historical/projected transition
+                x4 <- c(x.historical, get(paste("x", scenarios1[2], sep="."))[-1])
+                y.ensmin <- c(ensmin.historical, get(paste("ensmin", scenarios1[2], sep="."))[-1])
+                y.ensmax <- c(ensmax.historical, get(paste("ensmax", scenarios1[2], sep="."))[-1])
+              } else {
+                x4 <- c(x.historical, get(paste("x", scenario, sep="."))[-1])
+                y.ensmin <- c(ensmin.historical, get(paste("ensmin", scenario, sep="."))[-1])
+                y.ensmax <- c(ensmax.historical, get(paste("ensmax", scenario, sep="."))[-1])
+              }
+              # s.ensmin <- predict(cobs(x4,y.ensmin, nknots=10))
+              # s.ensmax <- predict(cobs(x4,y.ensmax, nknots=10)) 
+              # subset <- which(x4%in%get(paste("x", scenario, sep=".")))
+              # polygon(c(s.ensmin[subset,1], rev(s.ensmax[subset,1])), c(s.ensmin[subset,2], rev(s.ensmax[subset,2])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
+              s.ensmin <- smooth.spline(x4,y.ensmin, df=8) 
+              s.ensmax <- smooth.spline(x4,y.ensmax, df=8) 
+              subset <- which(x4%in%get(paste("x", scenario, sep=".")))
+              polygon(c(s.ensmin$x[subset], rev(s.ensmax$x[subset])), c(s.ensmin$y[subset], rev(s.ensmax$y[subset])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=NA)
+            }
+          }
+        }
+
+        if(refline==T){
+          ref.temp <- mean(ensmean.historical[111:140])
+          lines(1961:1990, rep(ref.temp, 30), lwd=2)
+          lines(c(1990,2100), rep(ref.temp, 2), lty=2)
+        }
+        
+        # overlay the ensemble mean lines on top of all polygons
+        if(showmean==T){
+          for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
+            if(simplify==F) lines(x=get(paste("x", scenario, sep=".")), y=get(paste("ensmean", scenario, sep=".")), col=colScheme[which(scenarios==scenario)], lwd=2)
+            if(simplify==T){
+              if(scenario=="historical"){ # need to run spline through the historical/projected transition
+                x4 <- c(x.historical, get(paste("x", scenarios1[2], sep=".")))
+                y4 <- c(ensmean.historical, get(paste("ensmean", scenarios1[2], sep=".")))
+              } else {
+                x4 <- c(x.historical, get(paste("x", scenario, sep=".")))
+                y4 <- c(ensmean.historical, get(paste("ensmean", scenario, sep=".")))
+              }
+              s4 <- smooth.spline(x4,y4, df=10) 
+              subset <- which(x4%in%get(paste("x", scenario, sep=".")))
+              lines(x=s4$x[subset], y=s4$y[subset], col=colScheme[which(scenarios==scenario)], lwd=2)
+            }
           }
         }
         print(gcm)
       }
       
       # overlay the 5-year lines on top of all polygons
-      if(input$yearlines==T){
+      if(yearlines==T){
         for(n in seq(1905, 2095, 5)){
           lines(c(n, n), c(-9999, 9999), col="grey", lty=2)
         }
@@ -1143,9 +1207,9 @@ server <- function(input, output, session) {
       b <- if("climatebc"%in%observations) 2 else NA
       c <- if("era5"%in%observations) 3 else NA
       d <- if(length(gcms.ts>0)) 4 else NA
-      e <- if(input$compare.ensemble!="None") 5 else NA
+      e <- if(compare.ensemble!="None") 5 else NA
       s <- !is.na(c(a,b,c,d,e))
-      legend.GCM <- if(input$mode=="Ensemble") paste("Simulated (", length(input$gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", input$gcms.ts1, ")", sep="")
+      legend.GCM <- if(mode=="Ensemble") paste("Simulated (", length(gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", gcms.ts1, ")", sep="")
       legend.compare <- paste("Simulated (", length(gcms.compare), " GCMs)", sep="")  
       legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateNA)", "ERA5 reanalysis", legend.GCM, legend.compare)[s], bty="n",
              lty=c(1,1,1,1 ,2)[s], 
@@ -1155,7 +1219,7 @@ server <- function(input, output, session) {
              pt.bg = c(NA, NA,NA, NA , NA)[s], 
              pt.cex=c(NA,NA,NA,NA ,NA)[s])
       
-      s <- rev(which(scenarios[-1]%in%input$scenarios1))
+      s <- rev(which(scenarios[-1]%in%scenarios1))
       legend("top", title = "Scenarios", legend=c("Historical", scenario.names[-1][s]), bty="n",
              lty=c(NA,NA,NA,NA,NA)[c(1,s+1)], col=colScheme[c(1,s+1)], lwd=c(NA,NA,NA,NA,NA)[c(1,s+1)], pch=c(22, 22,22,22,22)[c(1,s+1)], pt.bg = alpha(colScheme[c(1,s+1)], 0.35), pt.cex=c(2,2,2,2,2)[c(1,s+1)])
       
