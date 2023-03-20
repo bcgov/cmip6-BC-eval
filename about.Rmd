@@ -20,11 +20,8 @@ CMIP6 data downloaded and subsetted by Tongli Wang, Associate Professor at the U
 
 #### Citation
 Please cite contents of this app as:<br> 
-<<<<<<< HEAD
+
 Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2022. <a href='https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/joc.7566' target='_blank'>A global climate model ensemble for downscaled monthly climate normals over North America</a>. International Journal of Climatology. 42:5871-5891. <a href='https://doi.org/10.1002/joc.7566' target='_blank'>doi.org/10.1002/joc.7566</a>
-=======
-Mahony, C.R., T. Wang, A. Hamann, and A.J. Cannon. 2022. <a href='https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/joc.7566' target='_blank'>A global climate model ensemble for downscaled monthly climate normals over North America</a>. International Journal of Climatology. In press. <a href='https://doi.org/10.1002/joc.7566' target='_blank'>doi.org/10.1002/joc.7566</a>
->>>>>>> 6e62b310ae185088b614da4cdb0c56e2d60ee4ce
 
 ### Methods
 
