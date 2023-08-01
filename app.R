@@ -286,7 +286,7 @@ ui <- fluidPage(
                                 splitLayout(
                                   checkboxInput("showrange", label = "Show range of projections", value = T),
                                   checkboxInput("showmean", label = "Show mean of projections", value = T),
-                                  checkboxInput("simplify", label = "Simplify", value = T)
+                                  checkboxInput("simplify", label = "Simplify", value = F)
                                 )
                             )
                           ),
@@ -993,13 +993,17 @@ server <- function(input, output, session) {
       x1 <- unique(obs.ts.mean[,1])
       y1 <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
       baseline.obs <- mean(y1[which(x1%in%1961:1990)])
-      recent.climatebc <- mean(y1[which(x1%in%2012:2021)])
+      recent.climatebc <- mean(y1[which(x1%in%2011:2021)])
       
       # data for era5
       if("era5"%in%observations){
-        era5.ts.mean <- read.csv(paste("data/ts.era5.mean.", ecoprov, ".csv", sep=""))
+        era5.ts.mean <- read.csv(paste("data/ts.era5land.mean.", ecoprov, ".csv", sep=""))
         x2 <- unique(era5.ts.mean[,1])
         y2 <- era5.ts.mean[,which(names(era5.ts.mean)==variable)]
+        baseline.era5 <- mean(y2[which(x2%in%1961:1990)])
+        bias.era5 <- baseline.obs - baseline.era5
+        if(biascorrect==T) y2 <- y2+bias.era5
+        recent.era5 <- mean(y2[which(x2%in%2012:2021)], na.rm=T)
       }
       
       # data for pcic
@@ -1054,6 +1058,7 @@ server <- function(input, output, session) {
       
       # time series for selected ensemble
       if(compile==T) gcms.ts <- "compile" #this prevents the plotting of individual GCM projections and plots a single envelope for the ensemble as a whole. 
+      gcm <- gcms.ts[1]
       for(gcm in gcms.ts){
         # scenario <- scenarios1[1]
         for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
@@ -1085,29 +1090,35 @@ server <- function(input, output, session) {
         }
         
         if(input$showrange==T) {
-          for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
-            if(input$simplify==F){
+          if(input$simplify==F){
+            for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
               x <- get(paste("x", scenario, sep="."))
               polygon(c(x, rev(x)), c(get(paste("ensmin", scenario, sep=".")), rev(get(paste("ensmax", scenario, sep=".")))), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
             }
-            if(input$simplify==T){
-              if(scenario=="historical"){ # need to run spline through the historical/projected transition
-                x4 <- c(x.historical, get(paste("x", scenarios1[2], sep="."))[-1])
-                y.ensmin <- c(ensmin.historical, get(paste("ensmin", scenarios1[2], sep="."))[-1])
-                y.ensmax <- c(ensmax.historical, get(paste("ensmax", scenarios1[2], sep="."))[-1])
-              } else {
+          } else {
+            for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])][-1]){
+              if(scenario==scenarios1[2]){ # need to run spline through the historical/projected transition
                 x4 <- c(x.historical, get(paste("x", scenario, sep="."))[-1])
                 y.ensmin <- c(ensmin.historical, get(paste("ensmin", scenario, sep="."))[-1])
                 y.ensmax <- c(ensmax.historical, get(paste("ensmax", scenario, sep="."))[-1])
+                s.ensmin <- smooth.spline(x4,y.ensmin, df=8) 
+                s.ensmax <- smooth.spline(x4,y.ensmax, df=8) 
+                subset.hist <- which(x4%in%x.historical)
+                subset.proj <- which(x4%in%get(paste("x", scenario, sep=".")))
+                polygon(c(s.ensmin$x[subset.hist], rev(s.ensmax$x[subset.hist])), c(s.ensmin$y[subset.hist], rev(s.ensmax$y[subset.hist])), col=alpha(colScheme[which(scenarios=="historical")], if(gcm=="ensemble") 0.35 else 0.35), border=NA)
+                polygon(c(s.ensmin$x[subset.proj], rev(s.ensmax$x[subset.proj])), c(s.ensmin$y[subset.proj], rev(s.ensmax$y[subset.proj])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=NA)
+              } else { # this second routine uses interpolation splines so that the starting point for all scenarios is the same
+                x5 <- c(x.historical, get(paste("x", scenario, sep="."))[-1])
+                y.ensmin2 <- c(ensmin.historical, get(paste("ensmin", scenario, sep="."))[-1])
+                y.ensmax2 <- c(ensmax.historical, get(paste("ensmax", scenario, sep="."))[-1])
+                s.ensmin2 <- smooth.spline(x5,y.ensmin2, df=8) 
+                s.ensmax2 <- smooth.spline(x5,y.ensmax2, df=8) 
+                knots.hist <- c(1, 20, 40, 80, 100, 120, 140, 165)
+                knots.proj <- c(190, 210, 230, 250, length(x5))
+                s.ensmin3 <- stinterp(x5[c(knots.hist, knots.proj)],c(s.ensmin$y[knots.hist], s.ensmin2$y[knots.proj]), x5)
+                s.ensmax3 <- stinterp(x5[c(knots.hist, knots.proj)],c(s.ensmax$y[knots.hist], s.ensmax2$y[knots.proj]), x5)
+                polygon(c(s.ensmin3$x[subset.proj], rev(s.ensmax3$x[subset.proj])), c(s.ensmin3$y[subset.proj], rev(s.ensmax3$y[subset.proj])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=NA)
               }
-              # s.ensmin <- predict(cobs(x4,y.ensmin, nknots=10))
-              # s.ensmax <- predict(cobs(x4,y.ensmax, nknots=10)) 
-              # subset <- which(x4%in%get(paste("x", scenario, sep=".")))
-              # polygon(c(s.ensmin[subset,1], rev(s.ensmax[subset,1])), c(s.ensmin[subset,2], rev(s.ensmax[subset,2])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
-              s.ensmin <- smooth.spline(x4,y.ensmin, df=8) 
-              s.ensmax <- smooth.spline(x4,y.ensmax, df=8) 
-              subset <- which(x4%in%get(paste("x", scenario, sep=".")))
-              polygon(c(s.ensmin$x[subset], rev(s.ensmax$x[subset])), c(s.ensmin$y[subset], rev(s.ensmax$y[subset])), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=NA)
             }
           }
         }
@@ -1199,9 +1210,22 @@ server <- function(input, output, session) {
       # add in era5 observations
       era5.color <- "darkorange"
       if("era5"%in%observations){
+        end <- max(which(!is.na(y2)))
         lines(x2, y2, col=era5.color, lwd=2)
+        points(x2[end], y2[end], pch=16, cex=1, col=era5.color)
+        text(x2[end], y2[end], x2[end], pos= 4, offset = 0.25, col=era5.color, cex=1)
+        if(element=="PPT"){
+          change <- round(recent.era5/baseline.obs-1,2)
+          # text(2021,recent.era5, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=era5.color, pos=4, font=2, cex=1)
+        } else {
+          change <- round(recent.era5-baseline.obs,1)
+          # text(2021,recent.era5, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=era5.color, pos=4, font=2, cex=1)
+        }
+        lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=era5.color)
+        # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=era5.color)
+        # lines(c(2012,2021), rep(recent.era5, 2), lty=2, col=era5.color)
       }
-
+      
       #legend
       a <- if("pcic"%in%observations) 1 else NA
       b <- if("climatebc"%in%observations) 2 else NA
