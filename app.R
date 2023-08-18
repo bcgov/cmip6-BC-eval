@@ -318,6 +318,8 @@ ui <- fluidPage(
                           ),
                           
                           checkboxGroupInput("observations", "Choose observational datasets",
+                                             # choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis", "CRU/GPCC"),
+                                             # choiceValues = c("pcic", "climatebc", "era5", "cru"),
                                              choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis"),
                                              choiceValues = c("pcic", "climatebc", "era5"),
                                              selected = "pcic",
@@ -866,11 +868,11 @@ server <- function(input, output, session) {
   timeSeriesPlot <- function() {
     
     # test specificationS
-    observations <- "pcic"
-    ecoprov <- ecoprovs[1]
-    yeartime1 <- yeartimes[3]
+    observations <- c("pcic", "climatebc")
+    ecoprov <- ecoprovs[5]
+    yeartime1 <- yeartimes[4]
     yeartime2 <- yeartimes[1]
-    element1 <- elements[1]
+    element1 <- elements[4]
     element2 <- elements[2]
     variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
     variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
@@ -993,7 +995,7 @@ server <- function(input, output, session) {
       x1 <- unique(obs.ts.mean[,1])
       y1 <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
       baseline.obs <- mean(y1[which(x1%in%1961:1990)])
-      recent.climatebc <- mean(y1[which(x1%in%2011:2021)])
+      recent.climatebc <- mean(y1[which(x1%in%2014:2023)])
       
       # data for era5
       if("era5"%in%observations){
@@ -1003,18 +1005,29 @@ server <- function(input, output, session) {
         baseline.era5 <- mean(y2[which(x2%in%1961:1990)])
         bias.era5 <- baseline.obs - baseline.era5
         if(biascorrect==T) y2 <- y2+bias.era5
-        recent.era5 <- mean(y2[which(x2%in%2012:2021)], na.rm=T)
+        recent.era5 <- mean(y2[which(x2%in%2014:2023)], na.rm=T)
       }
       
       # data for pcic
       if("pcic"%in%observations){
         pcic.ts.mean <- read.csv(paste("data/ts.pcic.mean.", ecoprov, ".csv", sep=""))
-      x3 <- unique(pcic.ts.mean[,1])
-      y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)])  # apply faron's anomalies to the 1981-2010 absolute value of climatebc time series. 
-      baseline.pcic <- mean(y3[which(x3%in%1961:1990)])
-      y3 <- if(element=="PPT") y3*(baseline.obs/baseline.pcic) else y3+(baseline.obs-baseline.pcic)   # bias correct to 1961-1990 period
-      recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
+        x3 <- unique(pcic.ts.mean[,1])
+        y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)])  # apply faron's anomalies to the 1981-2010 absolute value of climatebc time series. 
+        baseline.pcic <- mean(y3[which(x3%in%1961:1990)])
+        y3 <- if(element=="PPT") y3*(baseline.obs/baseline.pcic) else y3+(baseline.obs-baseline.pcic)   # bias correct to 1961-1990 period
+        recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
       }
+      
+      # # data for cru/gpcc
+      # if("cru"%in%observations){
+      #   cru.ts.mean <- read.csv(paste("data/ts.cru.mean.", ecoprov, ".csv", sep=""))
+      #   x.cru <- unique(cru.ts.mean[,1])
+      #   y.cru <- cru.ts.mean[,which(names(cru.ts.mean)==variable)]
+      #   baseline.cru <- mean(y.cru[which(x.cru%in%1961:1990)])
+      #   bias.cru <- baseline.obs - baseline.cru
+      #   if(biascorrect==T) y.cru <- y.cru+bias.cru
+      #   recent.cru <- mean(y.cru[which(x.cru%in%2014:2023)], na.rm=T)
+      # }
       
       # time series for the comparison ensemble
       colScheme <- c("gray60", "dodgerblue4", "seagreen", "darkorange3", "darkred")
@@ -1089,15 +1102,16 @@ server <- function(input, output, session) {
           print(scenario)
         }
         
-        if(input$showrange==T) {
-          if(input$simplify==F){
+        if(showrange==T) {
+          if(simplify==F){
             for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])]){
               x <- get(paste("x", scenario, sep="."))
               polygon(c(x, rev(x)), c(get(paste("ensmin", scenario, sep=".")), rev(get(paste("ensmax", scenario, sep=".")))), col=alpha(colScheme[which(scenarios==scenario)], if(gcm=="ensemble") 0.35 else 0.35), border=colScheme[which(scenarios==scenario)])
             }
           } else {
-            for(scenario in scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])][-1]){
-              if(scenario==scenarios1[2]){ # need to run spline through the historical/projected transition
+            scenarios.select <- scenarios1[order(c(1,4,5,3,2)[which(scenarios%in%scenarios1)])][-1]
+            for(scenario in scenarios.select){
+              if(scenario==scenarios.select[1]){ # need to run spline through the historical/projected transition
                 x4 <- c(x.historical, get(paste("x", scenario, sep="."))[-1])
                 y.ensmin <- c(ensmin.historical, get(paste("ensmin", scenario, sep="."))[-1])
                 y.ensmax <- c(ensmax.historical, get(paste("ensmax", scenario, sep="."))[-1])
@@ -1178,10 +1192,10 @@ server <- function(input, output, session) {
         text(x3[end], y3[end], x3[end], pos= 4, offset = 0.25, col=pcic.color, cex=1)
         if(element=="PPT"){
           change <- round(recent.pcic/baseline.obs-1,2)
-          # text(2021,recent.pcic, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=pcic.color, pos=4, font=2, cex=1)
+          text(2021,recent.pcic, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=pcic.color, pos=4, font=2, cex=1)
         } else {
           change <- round(recent.pcic-baseline.obs,1)
-          # text(2021,recent.pcic, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=pcic.color, pos=4, font=2, cex=1)
+          text(2021,recent.pcic, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=pcic.color, pos=4, font=2, cex=1)
         }
         lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=pcic.color)
         # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=pcic.color)
@@ -1190,21 +1204,23 @@ server <- function(input, output, session) {
       
       # add in ClimateBC observations
       obs.color <- "black"
-        if("climatebc"%in%observations){
-          lines(x1[which(x1<1951)], y1[which(x1<1951)], lwd=1.5, lty=3, col=obs.color)
-          lines(x1[which(x1>1949)], y1[which(x1>1949)], lwd=1.5, col=obs.color)
-          if(!("pcic"%in%observations)){
-            if(element=="PPT"){
+      if("climatebc"%in%observations){
+        lines(x1[which(x1<1951)], y1[which(x1<1951)], lwd=1.5, lty=3, col=obs.color)
+        lines(x1[which(x1>1949)], y1[which(x1>1949)], lwd=1.5, col=obs.color)
+        points(x1[end], y1[end], pch=16, cex=1, col=obs.color)
+        text(x1[end], y1[end], x1[end], pos= 4, offset = 0.25, col=obs.color, cex=1)
+        # if(!("pcic"%in%observations)){
+          if(element=="PPT"){
             change <- round(recent.climatebc/baseline.obs-1,2)
-            text(2019,recent.climatebc, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=obs.color, pos=4, font=2, cex=1)
+            text(2022,recent.climatebc, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=obs.color, pos=4, font=2, cex=1)
           } else {
             change <- round(recent.climatebc-baseline.obs,1)
-            text(2019,recent.climatebc, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=obs.color, pos=4, font=2, cex=1)
+            text(2022,recent.climatebc, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=obs.color, pos=4, font=2, cex=1)
           }
-        }
-        lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=obs.color)
-        lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=obs.color)
-        lines(c(2012,2021), rep(recent.climatebc, 2), lty=2, col=obs.color)
+        # }
+        # lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=obs.color)
+        # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=obs.color)
+        # lines(c(2014,2023), rep(recent.climatebc, 2), lty=2, col=obs.color)
       }
       
       # add in era5 observations
@@ -1226,22 +1242,42 @@ server <- function(input, output, session) {
         # lines(c(2012,2021), rep(recent.era5, 2), lty=2, col=era5.color)
       }
       
+      # # add in cru/gpcc observations
+      # cru.color <- "red"
+      # if("cru"%in%observations){
+      #   end <- max(which(!is.na(y.cru)))
+      #   lines(x.cru, y.cru, col=cru.color, lwd=2)
+      #   points(x.cru[end], y.cru[end], pch=16, cex=1, col=cru.color)
+      #   text(x.cru[end], y.cru[end], x.cru[end], pos= 4, offset = 0.25, col=cru.color, cex=1)
+      #   if(element=="PPT"){
+      #     change <- round(recent.cru/baseline.obs-1,2)
+      #     # text(2021,recent.cru, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=cru.color, pos=4, font=2, cex=1)
+      #   } else {
+      #     change <- round(recent.cru-baseline.obs,1)
+      #     # text(2021,recent.cru, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=cru.color, pos=4, font=2, cex=1)
+      #   }
+      #   lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=cru.color)
+      #   # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=cru.color)
+      #   # lines(c(2012,2021), rep(recent.cru, 2), lty=2, col=cru.color)
+      # }
+      
       #legend
       a <- if("pcic"%in%observations) 1 else NA
       b <- if("climatebc"%in%observations) 2 else NA
       c <- if("era5"%in%observations) 3 else NA
-      d <- if(length(gcms.ts>0)) 4 else NA
-      e <- if(compare.ensemble!="None") 5 else NA
-      s <- !is.na(c(a,b,c,d,e))
+      d <- if("cru"%in%observations) 4 else NA
+      e <- if(length(gcms.ts>0)) 5 else NA
+      f <- if(compare.ensemble!="None") 6 else NA
+      s <- !is.na(c(a,b,c,d,e,f))
       legend.GCM <- if(mode=="Ensemble") paste("Simulated (", length(gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", gcms.ts1, ")", sep="")
       legend.compare <- paste("Simulated (", length(gcms.compare), " GCMs)", sep="")  
-      legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateNA)", "ERA5 reanalysis", legend.GCM, legend.compare)[s], bty="n",
-             lty=c(1,1,1,1 ,2)[s], 
-             col=c(pcic.color, obs.color, era5.color, "gray", "gray")[s], 
-             lwd=c(3,1.5,2, 2 ,2)[s], 
-             pch=c(NA,NA,NA, NA , NA)[s], 
-             pt.bg = c(NA, NA,NA, NA , NA)[s], 
-             pt.cex=c(NA,NA,NA,NA ,NA)[s])
+      legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateNA)", "ERA5 reanalysis", "Observed (CRU/GPCC)", legend.GCM, legend.compare)[s], bty="n",
+             lty=c(1,1,1,1,1 ,2)[s], 
+             col=c(pcic.color, obs.color, era5.color, cru.color, "gray", "gray")[s], 
+             lwd=c(3,1.5,2,2, 2 ,2)[s], 
+             pch=c(NA,NA,NA, NA, NA , NA)[s], 
+             pt.bg = c(NA, NA,NA,NA, NA , NA)[s], 
+             pt.cex=c(NA,NA,NA,NA,NA ,NA)[s])
       
       s <- rev(which(scenarios[-1]%in%scenarios1))
       legend("top", title = "Scenarios", legend=c("Historical", scenario.names[-1][s]), bty="n",
