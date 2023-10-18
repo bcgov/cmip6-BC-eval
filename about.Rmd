@@ -43,7 +43,10 @@ This tab allows users to compare model simulations to each other and to observat
 
 **Station observations**--Station observations are available from three sources: Pacific Climate Impacts Consortium (PCIC), <a href="http://climatebc.ca/" target="_blank">ClimateBC</a> and the GISS Surface Temperature Analysis (<a href="https://data.giss.nasa.gov/gistemp/" target="_blank">GISTEMP v4</a>). These sources are spatial averages of weather station observations using different methods. ClimateBC observations were obtained for the gridpoints of the common grid shown in the Maps tab. The 1960-1991 reference normals for bias correction are calculated from the ClimateBC time series. The PCIC time series are anomalies added to the 1981-2010 ClimateBC observational normals. Observational time series are dashed prior to 1950 to indicate lower quality and quantity of weather station data. The GISTEMP time series is updated monthly, but is only available for mean monthly temperature. the ClimateBC time series is updated annually. PCIC is no longer providing updates to their time series, but provides an authoritative benchmark for the other observational datasets.  
 
-**ERA5 reanalysis**--A <a href="https://www.ecmwf.int/en/about/media-centre/focus/2020/fact-sheet-reanalysis" target="_blank">reanalysis</a> is a global weather model calibrated to observations. ERA5 is the state-of-the-art global reanalysis provided by the European Centre for Medium-Range Weather Forecasts <a href="https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.3803" target="_blank">(Hersbach et al. 2020)</a>. 
+**ERA5 reanalysis**--A <a href="https://www.ecmwf.int/en/about/media-centre/focus/2020/fact-sheet-reanalysis" target="_blank">reanalysis</a> is a global weather model calibrated to observations. ERA5 is the state-of-the-art global reanalysis provided by the European Centre for Medium-Range Weather Forecasts <a href="https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.3803" target="_blank">(Hersbach et al. 2020)</a>. The anomalies were calculated from hourly-resolution ERA5-land data by Dr. Aseem Sharma and can be explored further with his <a href="https://bcgov-env.shinyapps.io/bc_climate_anomaly/" target="_blank">bc_climate_anomaly</a> app 
+ 
+  
+ 
  
 #### The Choose Models tab
 

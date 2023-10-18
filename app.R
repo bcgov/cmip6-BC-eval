@@ -304,11 +304,11 @@ ui <- fluidPage(
                           ),
                           
                                   
-
+                          # this is broken
                           fluidRow(
                             box(width = 12,
                                 splitLayout(cellWidths = c("75%", "25%"),
-                                            
+
                                             radioButtons("compare.ensemble", label="Compare to a predefined ensemble",
                                                          choiceNames = c("None", "13-model (ClimateNA)", "8-model subset"),
                                                          choiceValues = c("None", "13-model", "8-model"),
