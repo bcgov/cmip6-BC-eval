@@ -1599,7 +1599,7 @@ server <- function(input, output, session) {
       yeartimeMap <- if(input$seasonsOrMonths2=="Seasons") seasons[which(season.names==input$seasonbuttons2)] else monthcodes[which(month.abb==input$monthslider2)]
       
       if(input$areaMap=="Pacific Northwest"){
-        filename <- normalizePath(file.path('./www', paste("changeMap", input$elementMap2, yeartimeMap, "png",sep=".")))
+        filename <- normalizePath(file.path('./www', paste("ChangeMap", input$elementMap2, yeartimeMap, "png",sep=".")))
       } else { if(input$seasonsOrMonths2 == "Seasons"){
         filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap2, yeartimeMap, scenarios[which(scenario.names==input$scenario.map2)], c(2001, 2021, 2041, 2061, 2081)[which(proj.year.names==input$proj.year.map2)] , "png",sep=".")))
       } else {
