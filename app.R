@@ -324,19 +324,30 @@ ui <- fluidPage(
                             condition = "input.element1 == 'Mean temperature'",
                             
                             checkboxGroupInput("observations1", "Choose observational datasets",
-                                               choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis", "GISTEMP"),
-                                               choiceValues = c("pcic", "climatebc", "era5", "giss"),
+                                               choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5", "ERA5-land", "GISTEMP"),
+                                               choiceValues = c("pcic", "climatebc", "era5", "era5land", "giss"),
                                                selected = "climatebc",
                                                inline = T
                             ),
                           ),
                           
                           conditionalPanel(
-                            condition = "input.element1 != 'Mean temperature'",
+                            condition = "input.element1 == 'Mean daily maximum temperature (Tmax)'|'Mean daily minimum temperature (Tmin)'",
 
                             checkboxGroupInput("observations2", "Choose observational datasets",
-                                               choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5 reanalysis"),
-                                               choiceValues = c("pcic", "climatebc", "era5"),
+                                               choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5-land reanalysis"),
+                                               choiceValues = c("pcic", "climatebc", "era5land"),
+                                               selected = "climatebc",
+                                               inline = T
+                            ),
+                          ),
+                          
+                          conditionalPanel(
+                            condition = "input.element1 == 'Precipitation'",
+                            
+                            checkboxGroupInput("observations3", "Choose observational datasets",
+                                               choiceNames = c("Stations (PCIC)", "Stations (ClimateBC)", "ERA5", "ERA5-land"),
+                                               choiceValues = c("pcic", "climatebc", "era5", "era5land"),
                                                selected = "climatebc",
                                                inline = T
                             ),
@@ -883,35 +894,35 @@ server <- function(input, output, session) {
   
   timeSeriesPlot <- function() {
     
-    # test specificationS
-    observations <- c("climatebc")
-    ecoprov <- ecoprovs[1]
-    yeartime1 <- yeartimes[4]
-    yeartime2 <- yeartimes[1]
-    element1 <- elements[4]
-    element2 <- elements[2]
-    variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
-    variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
-    gcms.ts <- gcms[select8]
-    gcms.compare <- NA
-    scenarios1 <- c(scenarios[1:4])
-    nums <- c(1)
-    biascorrect <- T
-    showrange <- T
-    yfit <- T
-    cex <- 1
-    compare.ensemble <- "None"
-    showmean <- T
-    compile <- T
-    simplify <- T
-    refline <- T
-    yearlines <- T
-    mode <- "Ensemble"
-    gcms.ts1 <- gcms[4]
-    gcms.ts2 <- gcms[select8]
+    # # test specificationS
+    # observations <- c("climatebc")
+    # ecoprov <- ecoprovs[1]
+    # yeartime1 <- yeartimes[4]
+    # yeartime2 <- yeartimes[1]
+    # element1 <- elements[4]
+    # element2 <- elements[2]
+    # variable1 <- paste(element1, yeartime1, sep= if(yeartime1%in%seasons) "_" else "")
+    # variable2 <- paste(element2, yeartime2, sep= if(yeartime2%in%seasons) "_" else "")
+    # gcms.ts <- gcms[select8]
+    # gcms.compare <- NA
+    # scenarios1 <- c(scenarios[1:4])
+    # nums <- c(1)
+    # biascorrect <- T
+    # showrange <- T
+    # yfit <- T
+    # cex <- 1
+    # compare.ensemble <- "None"
+    # showmean <- T
+    # compile <- T
+    # simplify <- T
+    # refline <- T
+    # yearlines <- T
+    # mode <- "Ensemble"
+    # gcms.ts1 <- gcms[4]
+    # gcms.ts2 <- gcms[select8]
     
     # user specificationS
-    observations <- if(input$element1==element.names[1]) input$observations1 else input$observations2 
+    observations <- if(input$element1==element.names[1]) input$observations1 else if(input$element1==element.names[4]) input$observations3 else input$observations2 
     ecoprov <- ecoprovs[which(ecoprov.names==input$ecoprov.name)]
     yeartime1 <- yeartimes[which(yeartime.names==input$yeartime1)]
     yeartime2 <- if(input$compare==T) yeartimes[which(yeartime.names==input$yeartime2)] else yeartimes[which(yeartime.names==input$yeartime1)]
@@ -1008,30 +1019,41 @@ server <- function(input, output, session) {
       variable <- get(paste("variable",num,sep=""))
       
       # data for observations
-      x1 <- unique(obs.ts.mean[,1])
-      y1 <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
-      baseline.obs <- mean(y1[which(x1%in%1961:1990)])
-      recent.climatebc <- mean(y1[which(x1%in%2013:2022)])
+      x.climatebc <- unique(obs.ts.mean[,1])
+      y.climatebc <- obs.ts.mean[,which(names(obs.ts.mean)==variable)]
+      baseline.obs <- mean(y.climatebc[which(x.climatebc%in%1961:1990)])
+      recent.climatebc <- mean(y.climatebc[which(x.climatebc%in%2013:2022)])
       
       # data for era5
       if("era5"%in%observations){
-        era5.ts.mean <- read.csv(paste("data/ts.era5land.mean.", ecoprov, ".csv", sep=""))
-        x2 <- unique(era5.ts.mean[,1])
-        y2 <- era5.ts.mean[,which(names(era5.ts.mean)==variable)]
-        baseline.era5 <- mean(y2[which(x2%in%1961:1990)])
+        era5.ts.mean <- read.csv(paste("data/ts.era5.mean.", ecoprov, ".csv", sep=""))
+        x.era5 <- unique(era5.ts.mean[,1])
+        y.era5 <- era5.ts.mean[,which(names(era5.ts.mean)==variable)]
+        baseline.era5 <- mean(y.era5[which(x.era5%in%1961:1990)])
         bias.era5 <- baseline.obs - baseline.era5
-        if(biascorrect==T) y2 <- y2+bias.era5
-        recent.era5 <- mean(y2[which(x2%in%2013:2022)], na.rm=T)
+        if(biascorrect==T) y.era5 <- y.era5+bias.era5
+        recent.era5 <- mean(y.era5[which(x.era5%in%2013:2022)], na.rm=T)
+      }
+      
+      # data for era5land
+      if("era5land"%in%observations){
+        era5land.ts.mean <- read.csv(paste("data/ts.era5land.mean.", ecoprov, ".csv", sep=""))
+        x.era5land <- unique(era5land.ts.mean[,1])
+        y.era5land <- era5land.ts.mean[,which(names(era5land.ts.mean)==variable)]
+        baseline.era5land <- mean(y.era5land[which(x.era5land%in%1961:1990)])
+        bias.era5land <- baseline.obs - baseline.era5land
+        if(biascorrect==T) y.era5land <- y.era5land+bias.era5land
+        recent.era5land <- mean(y.era5land[which(x.era5land%in%2013:2022)], na.rm=T)
       }
       
       # data for pcic
       if("pcic"%in%observations){
         pcic.ts.mean <- read.csv(paste("data/ts.pcic.mean.", ecoprov, ".csv", sep=""))
-        x3 <- unique(pcic.ts.mean[,1])
-        y3 <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y1[which(x1%in%1981:2010)]) + mean(y1[which(x1%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y1[which(x1%in%1981:2010)])  # apply faron's anomalies to the 1981-2010 absolute value of climatebc time series. 
-        baseline.pcic <- mean(y3[which(x3%in%1961:1990)])
-        y3 <- if(element=="PPT") y3*(baseline.obs/baseline.pcic) else y3+(baseline.obs-baseline.pcic)   # bias correct to 1961-1990 period
-        recent.pcic <- mean(y3[which(x3%in%2012:2021)], na.rm=T)
+        x.pcic <- unique(pcic.ts.mean[,1])
+        y.pcic <- if(element=="PPT") pcic.ts.mean[,which(names(pcic.ts.mean)==variable)]*mean(y.climatebc[which(x.climatebc%in%1981:2010)]) + mean(y.climatebc[which(x.climatebc%in%1981:2010)]) else pcic.ts.mean[,which(names(pcic.ts.mean)==variable)] + mean(y.climatebc[which(x.climatebc%in%1981:2010)])  # apply faron's anomalies to the 1981-2010 absolute value of climatebc time series. 
+        baseline.pcic <- mean(y.pcic[which(x.pcic%in%1961:1990)])
+        y.pcic <- if(element=="PPT") y.pcic*(baseline.obs/baseline.pcic) else y.pcic+(baseline.obs-baseline.pcic)   # bias correct to 1961-1990 period
+        recent.pcic <- mean(y.pcic[which(x.pcic%in%2012:2021)], na.rm=T)
       }
       
       # # data for cru/gpcc
@@ -1217,11 +1239,11 @@ server <- function(input, output, session) {
       # add in PCIC observations
       pcic.color <- "blue"
       if("pcic"%in%observations){
-        end <- max(which(!is.na(y3)))
-        lines(x3[which(x3<1951)], y3[which(x3<1951)], lwd=3, lty=3, col=pcic.color)
-        lines(x3[which(x3>1949)], y3[which(x3>1949)], lwd=3, col=pcic.color)
-        points(x3[end], y3[end], pch=16, cex=1, col=pcic.color)
-        text(x3[end], y3[end], x3[end], pos= 4, offset = 0.25, col=pcic.color, cex=1)
+        end <- max(which(!is.na(y.pcic)))
+        lines(x.pcic[which(x.pcic<1951)], y.pcic[which(x.pcic<1951)], lwd=3, lty=3, col=pcic.color)
+        lines(x.pcic[which(x.pcic>1949)], y.pcic[which(x.pcic>1949)], lwd=3, col=pcic.color)
+        points(x.pcic[end], y.pcic[end], pch=16, cex=1, col=pcic.color)
+        text(x.pcic[end], y.pcic[end], x.pcic[end], pos= 4, offset = 0.25, col=pcic.color, cex=1)
         if(element=="PPT"){
           change <- round(recent.pcic/baseline.obs-1,2)
           # text(2021,recent.pcic, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=pcic.color, pos=4, font=2, cex=1)
@@ -1237,11 +1259,11 @@ server <- function(input, output, session) {
       # add in ClimateBC observations
       obs.color <- "black"
       if("climatebc"%in%observations){
-        end <- max(which(!is.na(y1)))
-        lines(x1[which(x1<1951)], y1[which(x1<1951)], lwd=1.5, lty=3, col=obs.color)
-        lines(x1[which(x1>1949)], y1[which(x1>1949)], lwd=1.5, col=obs.color)
-        points(x1[end], y1[end], pch=16, cex=1, col=obs.color)
-        text(x1[end], y1[end], x1[end], pos= 4, offset = 0.25, col=obs.color, cex=1)
+        end <- max(which(!is.na(y.climatebc)))
+        lines(x.climatebc[which(x.climatebc<1951)], y.climatebc[which(x.climatebc<1951)], lwd=1.5, lty=3, col=obs.color)
+        lines(x.climatebc[which(x.climatebc>1949)], y.climatebc[which(x.climatebc>1949)], lwd=1.5, col=obs.color)
+        points(x.climatebc[end], y.climatebc[end], pch=16, cex=1, col=obs.color)
+        text(x.climatebc[end], y.climatebc[end], x.climatebc[end], pos= 4, offset = 0.25, col=obs.color, cex=1)
         # if(!("pcic"%in%observations)){
           if(element=="PPT"){
             change <- round(recent.climatebc/baseline.obs-1,2)
@@ -1257,12 +1279,12 @@ server <- function(input, output, session) {
       }
       
       # add in era5 observations
-      era5.color <- "darkorange"
+      era5.color <- "red"
       if("era5"%in%observations){
-        end <- max(which(!is.na(y2)))
-        lines(x2, y2, col=era5.color, lwd=2)
-        points(x2[end], y2[end], pch=16, cex=1, col=era5.color)
-        text(x2[end], y2[end], x2[end], pos= 4, offset = 0.25, col=era5.color, cex=1)
+        end <- max(which(!is.na(y.era5)))
+        lines(x.era5, y.era5, col=era5.color, lwd=2)
+        points(x.era5[end], y.era5[end], pch=16, cex=1, col=era5.color)
+        text(x.era5[end], y.era5[end], x.era5[end], pos= 4, offset = 0.25, col=era5.color, cex=1)
         if(element=="PPT"){
           change <- round(recent.era5/baseline.obs-1,2)
           # text(2021,recent.era5, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=era5.color, pos=4, font=2, cex=1)
@@ -1273,6 +1295,25 @@ server <- function(input, output, session) {
         lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=era5.color)
         # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=era5.color)
         # lines(c(2012,2021), rep(recent.era5, 2), lty=2, col=era5.color)
+      }
+      
+      # add in era5land observations
+      era5land.color <- "darkorange"
+      if("era5land"%in%observations){
+        end <- max(which(!is.na(y.era5land)))
+        lines(x.era5land, y.era5land, col=era5land.color, lwd=2)
+        points(x.era5land[end], y.era5land[end], pch=16, cex=1, col=era5land.color)
+        text(x.era5land[end], y.era5land[end], x.era5land[end], pos= 4, offset = 0.25, col=era5land.color, cex=1)
+        if(element=="PPT"){
+          change <- round(recent.era5land/baseline.obs-1,2)
+          # text(2021,recent.era5land, if(change>0) paste("+",change*100,"%", sep="") else paste(change*100,"%", sep=""), col=era5land.color, pos=4, font=2, cex=1)
+        } else {
+          change <- round(recent.era5land-baseline.obs,1)
+          # text(2021,recent.era5land, if(change>0) paste("+",change,"C", sep="") else paste(change,"C", sep=""), col=era5land.color, pos=4, font=2, cex=1)
+        }
+        lines(1961:1990, rep(baseline.obs, 30), lwd=1, col=era5land.color)
+        # lines(c(1990,2021), rep(baseline.obs, 2), lty=2, col=era5land.color)
+        # lines(c(2012,2021), rep(recent.era5land, 2), lty=2, col=era5land.color)
       }
       
       # add in GISTEMP observations
@@ -1299,28 +1340,28 @@ server <- function(input, output, session) {
       a <- if("pcic"%in%observations) 1 else NA
       b <- if("climatebc"%in%observations) 2 else NA
       c <- if("era5"%in%observations) 3 else NA
-      # d <- if("cru"%in%observations) 4 else NA
-      d <- if("giss"%in%observations) 4 else NA
-      e <- if(length(gcms.ts>0)) 5 else NA
-      f <- if(compare.ensemble!="None") 6 else NA
-      s <- !is.na(c(a,b,c,d,e,f))
+      d <- if("era5land"%in%observations) 4 else NA
+      e <- if("giss"%in%observations) 5 else NA
+      f <- if(length(gcms.ts>0)) 6 else NA
+      g <- if(compare.ensemble!="None") 7 else NA
+      s <- !is.na(c(a,b,c,d,e,f,g))
       legend.GCM <- if(mode=="Ensemble") paste("Simulated (", length(gcms.ts2), " GCMs)", sep="")  else paste("Simulated (", gcms.ts1, ")", sep="")
       legend.compare <- paste("Simulated (", length(gcms.compare), " GCMs)", sep="")  
-      legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateBC)", "ERA5 reanalysis", "Observed (GISTEMP)", legend.GCM, legend.compare)[s], bty="n",
-             lty=c(1,1,1,1,1 ,2)[s], 
-             col=c(pcic.color, obs.color, era5.color, giss.color, "gray", "gray")[s], 
-             lwd=c(3,1.5,2,2, 2 ,2)[s], 
-             pch=c(NA,NA,NA, NA, NA , NA)[s], 
-             pt.bg = c(NA, NA,NA,NA, NA , NA)[s], 
-             pt.cex=c(NA,NA,NA,NA,NA ,NA)[s])
+      legend("topleft", title = "", legend=c("Observed (PCIC)", "Observed (ClimateBC)", "ERA5 reanalysis", "ERA5-land reanalysis", "Observed (GISTEMP)", legend.GCM, legend.compare)[s], bty="n",
+             lty=c(1,1,1,1,1,1,2)[s], 
+             col=c(pcic.color, obs.color, era5.color, era5land.color, giss.color, "gray", "gray")[s], 
+             lwd=c(3,1.5,2,2,2,2,2)[s], 
+             pch=c(NA,NA,NA,NA,NA,NA,NA)[s], 
+             pt.bg = c(NA, NA,NA,NA,NA,NA,NA)[s], 
+             pt.cex=c(NA,NA,NA,NA,NA,NA,NA)[s])
       
       s <- rev(which(scenarios[-1]%in%scenarios1))
       legend("top", title = "Scenarios", legend=c("Historical", scenario.names[-1][s]), bty="n",
-             lty=c(NA,NA,NA,NA,NA)[c(1,s+1)], col=colScheme[c(1,s+1)], lwd=c(NA,NA,NA,NA,NA)[c(1,s+1)], pch=c(22, 22,22,22,22)[c(1,s+1)], pt.bg = alpha(colScheme[c(1,s+1)], 0.35), pt.cex=c(2,2,2,2,2)[c(1,s+1)])
+             lty=c(NA,NA,NA,NA,NA)[c(1,s+1)], col=colScheme[c(1,s+1)], lwd=c(NA,NA,NA,NA,NA)[c(1,s+1)], pch=c(22,22,22,22,22)[c(1,s+1)], pt.bg = alpha(colScheme[c(1,s+1)], 0.35), pt.cex=c(2,2,2,2,2)[c(1,s+1)])
       
       mtext(ecoprov.names[which(ecoprovs==ecoprov)], side=1, line=-1.5, adj=0.95, font=2, cex=1.4)
       
-      mtext(paste(" Created using https://bcgov-env.shinyapps.io/cmip6-BC\n", if("pcic"%in%observations) "Observed anomalies calculated by Faron Anslow, Pacific Climate Impacts Consortium\n"  , "Contact: Colin Mahony colin.mahony@gov.bc.ca"), side=1, line=-1.35, adj=0.0, font=1, cex=1.1, col="gray")
+      mtext(paste(" Created using https://bcgov-env.shinyapps.io/cmip6-BC\n", "Contact: Colin Mahony colin.mahony@gov.bc.ca"), side=1, line=-1.35, adj=0.0, font=1, cex=1.1, col="gray")
       
       print(num)
     }
@@ -1603,7 +1644,7 @@ server <- function(input, output, session) {
       } else { if(input$seasonsOrMonths2 == "Seasons"){
         filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap2, yeartimeMap, scenarios[which(scenario.names==input$scenario.map2)], c(2001, 2021, 2041, 2061, 2081)[which(proj.year.names==input$proj.year.map2)] , "png",sep=".")))
       } else {
-        filename <- normalizePath(file.path('./www', paste("changeMap.NorAm", input$elementMap2, yeartimeMap, "png",sep=".")))
+        filename <- normalizePath(file.path('./www', paste("ChangeMap.NorAm", input$elementMap2, yeartimeMap, "png",sep=".")))
       }
       }
     }
